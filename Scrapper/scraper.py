@@ -1,7 +1,12 @@
 #!/usr/bin/env python3
 """
-Web Content Scraper CLI Script
-Supporting Playwright & Selenium with custom CSS selectors and Markdown export.
+Web Content Scraper CLI Script (Enhanced Edition v2.0)
+Supporting Playwright & Selenium with:
+- innerHTML extraction
+- Automated HTML-to-Markdown conversion (trafilatura & markdownify)
+- Dynamic redirect resolution for Google News / Google Search links
+- Extensive news media CSS selectors
+- CPT Dataset Quality Gatekeeper
 """
 
 import argparse
@@ -17,9 +22,7 @@ from typing import Dict, List, Tuple, Optional
 def normalize_url_key(url_str: str) -> str:
     """Normalize URL/domain for matching dictionary key."""
     url_str = url_str.strip()
-    # Remove protocol if present
     url_no_proto = re.sub(r'^https?://', '', url_str, flags=re.IGNORECASE)
-    # Remove trailing slash
     return url_no_proto.rstrip('/').lower()
 
 
@@ -34,13 +37,11 @@ def load_css_paths(csv_file_path: str) -> Dict[str, str]:
         sys.exit(1)
 
     with open(csv_file_path, mode='r', encoding='utf-8-sig') as f:
-        # Sample to determine delimiter
         first_line = f.readline()
         f.seek(0)
         delimiter = ';' if ';' in first_line else ','
         
         reader = csv.DictReader(f, delimiter=delimiter)
-        # Normalize column names
         field_map = {}
         if reader.fieldnames:
             for field in reader.fieldnames:
@@ -51,7 +52,6 @@ def load_css_paths(csv_file_path: str) -> Dict[str, str]:
                     field_map['css_path'] = field
 
         if 'url' not in field_map or 'css_path' not in field_map:
-            # Fallback for headerless or custom headers: first col = url, second = css_path
             f.seek(0)
             raw_reader = csv.reader(f, delimiter=delimiter)
             for row in raw_reader:
@@ -72,11 +72,12 @@ def load_css_paths(csv_file_path: str) -> Dict[str, str]:
 def get_css_selector_for_url(
     url: str,
     css_paths_map: Optional[Dict[str, str]],
-    default_css_path: str
+    default_css_path: str = "body",
+    silent: bool = False
 ) -> Tuple[str, bool]:
     """
     Returns (css_path, is_defined).
-    If css_paths_map is given but URL is not found, print log message and return default_css_path.
+    Matches against exact URL, full domain, stripped domain, or domain substring.
     """
     if css_paths_map is None:
         return default_css_path, True
@@ -85,52 +86,135 @@ def get_css_selector_for_url(
     domain = parsed.netloc.lower()
     full_url_norm = normalize_url_key(url)
 
-    # Check exact full URL match first
+    # 1. Exact full URL match
     if full_url_norm in css_paths_map:
         return css_paths_map[full_url_norm], True
 
-    # Check domain match (e.g. www.kompas.com or kompas.com)
+    # 2. Domain match (e.g. www.kompas.com)
     domain_norm = normalize_url_key(domain)
     if domain_norm in css_paths_map:
         return css_paths_map[domain_norm], True
 
-    # Check domain without www prefix
+    # 3. Domain without www prefix (e.g. kompas.com)
     domain_no_www = domain_norm.replace('www.', '')
     if domain_no_www in css_paths_map:
         return css_paths_map[domain_no_www], True
 
-    # Substring match check
+    # 4. Substring match check
     for key, selector in css_paths_map.items():
         if key in full_url_norm or key in domain_norm:
             return selector, True
 
-    # Not defined in css_paths_map
-    print(f"css-path url '{url}' tidak didefinisikan, menggunakan default path")
+    # 5. Fallback to default
+    if not silent:
+        print(f"css-path url '{url}' tidak didefinisikan di CSV, menggunakan default: '{default_css_path}'")
     return default_css_path, False
 
 
-def extract_content_js() -> str:
-    """JavaScript snippet executed in browser context."""
-    return """
-    (cssPath) => {
-        let elementText = document.querySelectorAll(cssPath);
-        let scrapped = '';
-        elementText.forEach(el => {
-            scrapped = `${scrapped}\\n${el.innerText}`;
-        });
-        return scrapped;
-    }
+def convert_html_to_markdown(html_content: str, url: str = "", title: str = "") -> str:
     """
+    Converts extracted HTML into clean, standardized Markdown for LLM Continual Pre-Training.
+    Uses trafilatura for boilerplate removal or markdownify for exact DOM conversion.
+    """
+    if not html_content or not html_content.strip():
+        return ""
+
+    markdown_text = ""
+
+    # Strategy 1: Trafilatura (Optimal for full HTML / large container boilerplate filtering)
+    try:
+        import trafilatura
+        extracted = trafilatura.extract(
+            html_content,
+            output_format="markdown",
+            include_tables=True,
+            include_links=False
+        )
+        if extracted and len(extracted.split()) >= 25:
+            markdown_text = extracted.strip()
+    except (ImportError, Exception):
+        pass
+
+    # Strategy 2: Markdownify (Converts exact HTML tags into Markdown)
+    if not markdown_text:
+        try:
+            from markdownify import markdownify as md
+            converted = md(
+                html_content,
+                heading_style="ATX",
+                strip=['script', 'style', 'nav', 'footer', 'aside', 'noscript', 'iframe']
+            )
+            converted = re.sub(r'\n{3,}', '\n\n', converted).strip()
+            if converted and len(converted.split()) >= 15:
+                markdown_text = converted
+        except (ImportError, Exception):
+            pass
+
+    # Strategy 3: Regex tag stripper fallback
+    if not markdown_text:
+        clean_text = re.sub(r'<[^>]+>', ' ', html_content)
+        clean_text = re.sub(r'\s+', ' ', clean_text).strip()
+        markdown_text = clean_text
+
+    # Prepend Title and URL metadata header if not already present
+    header_block = ""
+    if title and not markdown_text.startswith("#"):
+        header_block += f"# {title.strip()}\n\n"
+    if url:
+        header_block += f"> Sumber: {url.strip()}\n\n"
+
+    return header_block + markdown_text
+
+
+def is_cpt_worthy_content(url: str, text: str, min_words: int = 25) -> Tuple[bool, str]:
+    """
+    Evaluates if extracted text is worthy of LLM Continual Pre-Training (CPT).
+    Filters out non-article pages, error dumps, raw IP addresses, and app store pages.
+    """
+    parsed = urlparse(url)
+    bad_domains = ["play.google.com", "apps.apple.com", "accounts.google.com", "facebook.com/login"]
+    if any(bd in parsed.netloc.lower() for bd in bad_domains):
+        return False, f"Bukan artikel/dokumen web ({parsed.netloc})"
+
+    cleaned = text.strip()
+    if not cleaned:
+        return False, "Konten teks kosong"
+
+    words = cleaned.split()
+    if len(words) < min_words:
+        return False, f"Teks terlalu pendek ({len(words)} kata < batas minimal {min_words} kata)"
+
+    # Check for raw IP address dumps (e.g. speedtest / ip checker output)
+    lines = [line.strip() for line in cleaned.split("\n") if line.strip()]
+    if all(re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$", line) for line in lines):
+        return False, "Deteksi dump alamat IP mentah (bukan artikel informatif)"
+
+    # Check for WAF / Cloudflare block screen patterns
+    block_phrases = [
+        "attention required! | cloudflare",
+        "just a moment...",
+        "access denied",
+        "403 forbidden",
+        "enable javascript and cookies",
+        "security check to access",
+        "sorry, you have been blocked"
+    ]
+    first_600 = cleaned[:600].lower()
+    if any(phrase in first_600 for phrase in block_phrases):
+        return False, "Deteksi halaman blokir WAF / Cloudflare challenge"
+
+    return True, "Valid CPT"
 
 
 def scrape_with_playwright(
     urls: List[str],
     css_paths_map: Optional[Dict[str, str]],
-    default_css_path: str,
+    default_css_path: str = "body",
     headless: bool = True,
-    timeout: int = 30
+    timeout: int = 30,
+    min_words: int = 25
 ) -> List[Dict[str, str]]:
-    """Scrape web pages using Playwright."""
+    """Scrape web pages using Playwright with innerHTML extraction and HTML-to-Markdown conversion."""
     try:
         from playwright.sync_api import sync_playwright
     except ImportError:
@@ -138,60 +222,92 @@ def scrape_with_playwright(
         sys.exit(1)
 
     results = []
-    print(f"[*] Starting Playwright (headless={headless})...")
+    print(f"[*] Starting Playwright (headless={headless}, default_selector='{default_css_path}')...")
 
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=headless)
         context = browser.new_context(
-            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            viewport={"width": 1920, "height": 1080}
         )
+        context.add_init_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined});")
         page = context.new_page()
 
         for idx, raw_url in enumerate(urls, 1):
             url = raw_url if raw_url.startswith(('http://', 'https://')) else f"https://{raw_url}"
-            css_path, _ = get_css_selector_for_url(raw_url, css_paths_map, default_css_path)
+            is_redirect_link = "google.com/goto" in url or "google.com/url" in url or "news.google.com" in url
+            
+            css_path, is_defined = get_css_selector_for_url(raw_url, css_paths_map, default_css_path, silent=is_redirect_link)
 
-            print(f"[{idx}/{len(urls)}] Opening {url} (CSS Path: '{css_path}')...")
-            scrapped_text = ""
+            print(f"\n[{idx}/{len(urls)}] Mengakses: {url}...")
+            raw_html = ""
+            scrapped_markdown = ""
             status = "SUCCESS"
+            final_url = url
+            page_title = ""
 
             try:
                 page.goto(url, wait_until="domcontentloaded", timeout=timeout * 1000)
-                # Wait briefly for dynamic elements if any
                 page.wait_for_timeout(1000)
+                final_url = page.url
+                page_title = page.title()
 
-                # Execute JS extraction logic
-                js_code = """
-                (cssPath) => {
-                    let cssPath = arguments[0] || cssPath;
-                    let elementText = document.querySelectorAll(cssPath);
-                    let scrapped = '';
-                    elementText.forEach(el => {
-                        scrapped = `${scrapped}\\n${el.innerText}`;
-                    });
-                    return scrapped;
-                }
-                """
-                scrapped_text = page.evaluate(
+                # Dynamic Redirect Resolution
+                if final_url != url:
+                    final_css, final_defined = get_css_selector_for_url(final_url, css_paths_map, default_css_path, silent=False)
+                    if final_defined or not is_defined:
+                        css_path = final_css
+                        print(f"    -> [Redirect Terbuka] Mendarat di: {final_url} (Selektor: '{css_path}')")
+
+                # Extract innerHTML from target element(s)
+                raw_html = page.evaluate(
                     """(cssPath) => {
-                        let elementText = document.querySelectorAll(cssPath);
-                        let scrapped = '';
-                        elementText.forEach(el => {
-                            scrapped = `${scrapped}\\n${el.innerText}`;
-                        });
-                        return scrapped;
+                        let el = document.querySelector(cssPath);
+                        if (el) {
+                            return el.innerHTML;
+                        }
+                        let nodes = document.querySelectorAll(cssPath);
+                        if (nodes.length > 0) {
+                            let res = '';
+                            nodes.forEach(n => res += '\\n' + n.innerHTML);
+                            return res;
+                        }
+                        return document.body ? document.body.innerHTML : '';
                     }""",
                     css_path
                 )
+
+                # Smart Semantic Fallback if selector returned empty or minimal HTML
+                if not raw_html or len(raw_html) < 200:
+                    fallback_html = page.evaluate("""() => {
+                        let article = document.querySelector('article') || document.querySelector('main') || document.querySelector('.article-content') || document.querySelector('.articles-content');
+                        return article ? article.innerHTML : '';
+                    }""")
+                    if fallback_html and len(fallback_html) > len(raw_html):
+                        print("    -> [Smart Fallback] Ekstraksi dari tag semantik <article>/<main> aktif")
+                        raw_html = fallback_html
+
+                # Convert extracted HTML to clean Markdown
+                scrapped_markdown = convert_html_to_markdown(raw_html, url=final_url, title=page_title)
+
+                # Quality Gatekeeper Check
+                is_worthy, reason = is_cpt_worthy_content(final_url, scrapped_markdown, min_words=min_words)
+                if not is_worthy:
+                    status = f"FILTERED: {reason}"
+                    print(f"    -> [Quality Gate] DITOLAK: {reason}")
+                else:
+                    word_cnt = len(scrapped_markdown.split())
+                    print(f"    -> [Quality Gate] DITERIMA: {word_cnt} kata Markdown terkonversi rapi")
+
             except Exception as e:
                 status = f"ERROR: {str(e)}"
                 print(f"    -> Gagal mengekstrak {url}: {e}")
 
             results.append({
-                "url": url,
+                "url": final_url,
                 "raw_url": raw_url,
                 "css_path": css_path,
-                "content": scrapped_text.strip(),
+                "content": scrapped_markdown.strip() if status == "SUCCESS" else "",
                 "status": status
             })
 
@@ -203,21 +319,21 @@ def scrape_with_playwright(
 def scrape_with_selenium(
     urls: List[str],
     css_paths_map: Optional[Dict[str, str]],
-    default_css_path: str,
+    default_css_path: str = "body",
     headless: bool = True,
-    timeout: int = 30
+    timeout: int = 30,
+    min_words: int = 25
 ) -> List[Dict[str, str]]:
-    """Scrape web pages using Selenium."""
+    """Scrape web pages using Selenium with innerHTML extraction and HTML-to-Markdown conversion."""
     try:
         from selenium import webdriver
         from selenium.webdriver.chrome.options import Options
-        from selenium.webdriver.common.by import By
     except ImportError:
         print("[Error] Package 'selenium' belum terinstal. Install dengan: pip install selenium")
         sys.exit(1)
 
     results = []
-    print(f"[*] Starting Selenium (headless={headless})...")
+    print(f"[*] Starting Selenium (headless={headless}, default_selector='{default_css_path}')...")
 
     chrome_options = Options()
     if headless:
@@ -233,35 +349,63 @@ def scrape_with_selenium(
     try:
         for idx, raw_url in enumerate(urls, 1):
             url = raw_url if raw_url.startswith(('http://', 'https://')) else f"https://{raw_url}"
-            css_path, _ = get_css_selector_for_url(raw_url, css_paths_map, default_css_path)
+            is_redirect_link = "google.com/goto" in url or "google.com/url" in url or "news.google.com" in url
+            css_path, is_defined = get_css_selector_for_url(raw_url, css_paths_map, default_css_path, silent=is_redirect_link)
 
-            print(f"[{idx}/{len(urls)}] Opening {url} (CSS Path: '{css_path}')...")
-            scrapped_text = ""
+            print(f"\n[{idx}/{len(urls)}] Mengakses: {url}...")
+            raw_html = ""
+            scrapped_markdown = ""
             status = "SUCCESS"
+            final_url = url
+            page_title = ""
 
             try:
                 driver.get(url)
                 time.sleep(1)
+                final_url = driver.current_url
+                page_title = driver.title
+
+                if final_url != url:
+                    final_css, final_defined = get_css_selector_for_url(final_url, css_paths_map, default_css_path, silent=False)
+                    if final_defined or not is_defined:
+                        css_path = final_css
+                        print(f"    -> [Redirect Terbuka] Mendarat di: {final_url} (Selektor: '{css_path}')")
 
                 js_script = """
                 let cssPath = arguments[0];
-                let elementText = document.querySelectorAll(cssPath);
-                let scrapped = '';
-                elementText.forEach(el => {
-                    scrapped = `${scrapped}\\n${el.innerText}`;
-                });
-                return scrapped;
+                let el = document.querySelector(cssPath);
+                if (el) {
+                    return el.innerHTML;
+                }
+                let nodes = document.querySelectorAll(cssPath);
+                if (nodes.length > 0) {
+                    let res = '';
+                    nodes.forEach(n => res += '\\n' + n.innerHTML);
+                    return res;
+                }
+                return document.body ? document.body.innerHTML : '';
                 """
-                scrapped_text = driver.execute_script(js_script, css_path)
+                raw_html = driver.execute_script(js_script, css_path)
+
+                scrapped_markdown = convert_html_to_markdown(raw_html or "", url=final_url, title=page_title)
+
+                is_worthy, reason = is_cpt_worthy_content(final_url, scrapped_markdown, min_words=min_words)
+                if not is_worthy:
+                    status = f"FILTERED: {reason}"
+                    print(f"    -> [Quality Gate] DITOLAK: {reason}")
+                else:
+                    word_cnt = len(scrapped_markdown.split())
+                    print(f"    -> [Quality Gate] DITERIMA: {word_cnt} kata Markdown terkonversi rapi")
+
             except Exception as e:
                 status = f"ERROR: {str(e)}"
                 print(f"    -> Gagal mengekstrak {url}: {e}")
 
             results.append({
-                "url": url,
+                "url": final_url,
                 "raw_url": raw_url,
                 "css_path": css_path,
-                "content": scrapped_text.strip() if scrapped_text else "",
+                "content": scrapped_markdown.strip() if status == "SUCCESS" else "",
                 "status": status
             })
     finally:
@@ -282,7 +426,6 @@ def read_url_list(urls_file: str) -> List[str]:
             line = line.strip()
             if not line:
                 continue
-            # Skip header line if present (e.g., 'url')
             if line.lower() in ['url', 'urls', 'link', 'links']:
                 continue
             urls.append(line)
@@ -301,10 +444,9 @@ def sanitize_filename(name: str) -> str:
 
 def save_output(results: List[Dict[str, str]], output_target: str, output_mode: str):
     """Save clean scraped content to Markdown file(s) for training dataset."""
-    valid_items = [item for item in results if item.get('content') and item['content'].strip()]
-    failed_items = [item for item in results if not item.get('content') or not item['content'].strip()]
+    valid_items = [item for item in results if item.get('status') == 'SUCCESS' and item.get('content')]
+    filtered_or_failed = [item for item in results if item.get('status') != 'SUCCESS' or not item.get('content')]
 
-    # Determine log file path and output directory
     if output_mode == 'merge':
         out_dir = os.path.dirname(output_target)
         if not out_dir:
@@ -319,21 +461,19 @@ def save_output(results: List[Dict[str, str]], output_target: str, output_mode: 
 
     os.makedirs(out_dir, exist_ok=True)
 
-    # Log failure / empty extraction details if any exist
-    if failed_items:
+    if filtered_or_failed:
         with open(log_file, 'w', encoding='utf-8') as log_f:
-            log_f.write(f"=== SCRAPING LOG / FAILURE REPORT ({time.strftime('%Y-%m-%d %H:%M:%S')}) ===\n")
-            log_f.write(f"Total URL diproses: {len(results)}\n")
-            log_f.write(f"Total Berhasil: {len(valid_items)}\n")
-            log_f.write(f"Total Gagal / Kosong: {len(failed_items)}\n\n")
-            for item in failed_items:
-                log_f.write(f"- URL: {item['url']}\n")
-                log_f.write(f"  CSS Path: {item['css_path']}\n")
-                log_f.write(f"  Status: {item['status']}\n\n")
+            log_f.write(f"=== SCRAPING QUALITY LOG & REJECTION REPORT ({time.strftime('%Y-%m-%d %H:%M:%S')}) ===\n")
+            log_f.write(f"Total URL Diproses : {len(results)}\n")
+            log_f.write(f"Total Lolos CPT    : {len(valid_items)}\n")
+            log_f.write(f"Total Ditolak/Gagal: {len(filtered_or_failed)}\n\n")
+            for item in filtered_or_failed:
+                log_f.write(f"- URL Target: {item['url']}\n")
+                log_f.write(f"  URL Input : {item['raw_url']}\n")
+                log_f.write(f"  Alasan    : {item['status']}\n\n")
 
-        print(f"[INFO] {len(failed_items)} URL gagal/kosong diekstrak. Detail dicatat di log: {os.path.abspath(log_file)}")
+        print(f"\n[INFO] {len(filtered_or_failed)} URL ditolak/gagal. Detail tercatat di: {os.path.abspath(log_file)}")
 
-    # Save clean dataset Markdown file(s)
     if output_mode == 'merge':
         clean_contents = [item['content'].strip() for item in valid_items]
         merged_text = "\n\n---\n\n".join(clean_contents)
@@ -343,7 +483,7 @@ def save_output(results: List[Dict[str, str]], output_target: str, output_mode: 
         with open(output_target, 'w', encoding='utf-8') as f:
             f.write(merged_text)
 
-        print(f"[OK] {len(valid_items)} konten bersih berhasil digabungkan ke: {os.path.abspath(output_target)}")
+        print(f"[OK] {len(valid_items)} artikel bersih berkualitas tinggi disimpan ke: {os.path.abspath(output_target)}")
 
     elif output_mode == 'each':
         for idx, item in enumerate(valid_items, 1):
@@ -355,7 +495,7 @@ def save_output(results: List[Dict[str, str]], output_target: str, output_mode: 
             with open(filepath, 'w', encoding='utf-8') as f:
                 f.write(item['content'].strip() + "\n")
 
-        print(f"[OK] Scrapping selesai. {len(valid_items)} file clean dataset tersimpan pada folder: {os.path.abspath(out_dir)}")
+        print(f"[OK] {len(valid_items)} file dataset CPT tersimpan pada folder: {os.path.abspath(out_dir)}")
 
 
 def main():
@@ -380,8 +520,8 @@ def main():
     )
     parser.add_argument(
         "--css-path",
-        default="body p",
-        help="Default CSS Path selector ekstraksi elemen text. Default: 'body p'"
+        default="body",
+        help="Default CSS Path selector ekstraksi elemen. Default: 'body'"
     )
     parser.add_argument(
         "--css-paths",
@@ -405,21 +545,24 @@ def main():
         default=30,
         help="Timeout waktu tunggu loading halaman dalam detik. Default: 30"
     )
+    parser.add_argument(
+        "--min-words",
+        type=int,
+        default=25,
+        help="Batas minimum jumlah kata agar konten dinyatakan layak CPT (default: 25 kata)"
+    )
 
     args = parser.parse_args()
 
-    # 1. Read URL list
     urls = read_url_list(args.urls)
     if not urls:
         print("[!] Tidak ada URL yang valid untuk diproses.")
         sys.exit(0)
 
-    # 2. Load CSS path mapping if provided
     css_paths_map = None
     if args.css_paths:
         css_paths_map = load_css_paths(args.css_paths)
 
-    # 3. Perform scraping
     headless_mode = not args.no_headless
     if args.engine == "playwright":
         results = scrape_with_playwright(
@@ -427,7 +570,8 @@ def main():
             css_paths_map=css_paths_map,
             default_css_path=args.css_path,
             headless=headless_mode,
-            timeout=args.timeout
+            timeout=args.timeout,
+            min_words=args.min_words
         )
     else:
         results = scrape_with_selenium(
@@ -435,10 +579,10 @@ def main():
             css_paths_map=css_paths_map,
             default_css_path=args.css_path,
             headless=headless_mode,
-            timeout=args.timeout
+            timeout=args.timeout,
+            min_words=args.min_words
         )
 
-    # 4. Save results to markdown
     save_output(results, args.output, args.output_mode)
 
 
