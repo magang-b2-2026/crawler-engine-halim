@@ -1,10 +1,32 @@
-venv
-.venv
+# Virtual Environments
+venv/
+.venv/
+env/
+
+# Python Cache & Bytecode
 __pycache__/
-*.pyc
+*.py[cod]
+*$py.class
+
+# Scrapper Outputs & Temporary Test Datasets
+Scrapper/output/*
+!Scrapper/output/hasil_scrapping.md
+!Scrapper/output/hasil_scrapping.log
+Scrapper/qa_test_urls.txt
+Scrapper/smoke_test_urls.txt
 Scrapper/test_tier2_input.txt
+
+# Decompiled & Scratch Artifacts
+extracted_src/
+scratch/
 
 # Environment & Credentials (STRICTLY PRIVATE)
 .env
 .env.*
 !.env.example
+
+# IDE & OS Metadata
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

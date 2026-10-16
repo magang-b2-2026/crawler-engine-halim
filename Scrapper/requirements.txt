@@ -1,2 +1,18 @@
+# ==============================================================================
+# AITF CRAWLER ENGINE & CPT DATASET PIPELINE DEPENDENCIES
+# ==============================================================================
+
+# Core Asynchronous HTTP & RSS Discovery
+httpx>=0.25.0
+googlenewsdecoder>=0.1.0
+
+# Content Extraction & Clean Markdown Conversion (CPT Standards)
+trafilatura>=1.6.0
+markdownify>=0.11.6
+beautifulsoup4>=4.12.0
+
+# Browser Automation & Dynamic JavaScript Rendering (Tier 2 Fallback)
 playwright>=1.40.0
+
+# Optional Legacy Engine (Standalone Scraper)
 selenium>=4.15.0
