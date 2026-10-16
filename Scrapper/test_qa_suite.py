@@ -190,6 +190,39 @@ class TestHTMLEntityAndMarkdown(unittest.TestCase):
         self.assertIn("Paragraf pertama", md_res)
         self.assertIn("Paragraf kedua", md_res)
 
+    def test_nextjs_and_script_noise_suppressed(self):
+        """Memastikan data streaming Next.js, script JSON, dan inline CSS tidak bocor ke markdown."""
+        dirty_html = (
+            "<style>.bar{color:red;}</style>"
+            "<article><h1>Berita Hilirisasi Nikel</h1><p>Indonesia terus memperkuat rantai pasok hilirisasi tambang nikel nasional untuk industri baterai.</p></article>"
+            "<script id='__NEXT_DATA__' type='application/json'>{\"props\":{\"pageProps\":{\"extra\":\"payload_noise\"}}}</script>"
+            "<script>window.dataLayer = window.dataLayer || [];</script>"
+        )
+        clean_md = convert_html_to_markdown(dirty_html, url="https://example.com", title="Berita Hilirisasi")
+        self.assertIn("Hilirisasi Nikel", clean_md)
+        self.assertNotIn("payload_noise", clean_md, "JSON payload tidak boleh bocor ke dataset")
+        self.assertNotIn("dataLayer", clean_md, "Script tags tidak boleh bocor ke dataset")
+        self.assertNotIn(".bar{color:red;}", clean_md, "CSS styles tidak boleh bocor ke dataset")
+
+    def test_unwrapped_html_fragment_safe(self):
+        """Memastikan potongan HTML tanpa tag html/body tetap aman diekstrak tanpa error."""
+        fragment = "<div><p>Ini adalah fragmen artikel berita tanpa tag root html atau body dari querySelector.</p></div>"
+        res = convert_html_to_markdown(fragment)
+        self.assertIn("fragmen artikel", res)
+
+    def test_truncation_and_unhydrated_spa_detection(self):
+        """Uji logika auto-fallback jika terdeteksi konten terpotong atau unhydrated SPA."""
+        truncated_md = "Pemerintah merencanakan hilirisasi nikel secara bertahap di berbagai wilayah timur Indonesia. Baca selengkapnya di halaman berikutnya..."
+        tail = truncated_md[-250:].lower()
+        trunc_markers = ("baca selengkapnya", "halaman selanjutnya", "halaman berikutnya", "baca kelanjutannya", "bersambung ke")
+        self.assertTrue(any(tm in tail for tm in trunc_markers), "Harus mendeteksi marker pemotongan teks")
+
+        html_spa = "<html><script id='__NEXT_DATA__'>{}</script><body><p>Teaser singkat artikel.</p></body></html>"
+        spa_markers = ("__NEXT_DATA__", "window.__INITIAL_STATE__", "__NUXT__", "window.__remixContext")
+        has_spa = any(m in html_spa for m in spa_markers)
+        word_count = len("Teaser singkat artikel.".split())
+        self.assertTrue(has_spa and word_count < 120, "Harus mendeteksi SPA yang belum ter-hydrate")
+
 
 class TestDatasetExporter(unittest.TestCase):
     def test_export_structure(self):

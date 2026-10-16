@@ -88,20 +88,25 @@ def convert_html_to_markdown(html_content: str, url: str = "", title: str = "") 
     if not html_content or not html_content.strip():
         return ""
 
+    raw_to_parse = html_content
+    if "<html" not in html_content[:300].lower() and "<body" not in html_content[:300].lower():
+        raw_to_parse = f"<!DOCTYPE html><html><body>{html_content}</body></html>"
+
     try:
         extracted = trafilatura.extract(
-            html_content, output_format="markdown", include_tables=True, include_links=False, favor_precision=True
+            raw_to_parse, output_format="markdown", include_tables=True, include_links=False, favor_precision=True
         )
-        if extracted and len(extracted.split()) >= 25:
+        if extracted and len(extracted.split()) >= 15:
             return extracted.strip()
     except Exception:
         pass
 
     try:
+        sanitized = re.sub(r"<(script|style|noscript)[^>]*>.*?</\1>", "", html_content, flags=re.I | re.S)
         res = md(
-            html_content,
+            sanitized,
             heading_style="ATX",
-            strip=["script", "style", "nav", "footer", "aside", "noscript", "iframe", "form"],
+            strip=["nav", "footer", "aside", "iframe", "form"],
         )
         res = re.sub(r"\n{3,}", "\n\n", res).strip()
         if res and len(res.split()) >= 15:
@@ -109,7 +114,8 @@ def convert_html_to_markdown(html_content: str, url: str = "", title: str = "") 
     except Exception:
         pass
 
-    return re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", html_content)).strip()
+    clean_strip = re.sub(r"<(script|style|noscript)[^>]*>.*?</\1>", "", html_content, flags=re.I | re.S)
+    return re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", clean_strip)).strip()
 
 
 BLOCK_PHRASES = (
@@ -301,6 +307,17 @@ class HybridAsyncCrawler:
                 md_content = convert_html_to_markdown(resp.text, url=final_url, title=title)
                 worthy, _ = is_cpt_worthy_content(final_url, md_content, min_words=self.min_words)
                 if worthy:
+                    # Deteksi konten terpotong / Unhydrated SPA Mismatch (Auto-fallback ke Tier 2)
+                    words = md_content.split()
+                    spa_markers = ("__NEXT_DATA__", "window.__INITIAL_STATE__", "__NUXT__", "window.__remixContext")
+                    if any(m in resp.text for m in spa_markers) and len(words) < 120:
+                        return None
+
+                    tail = md_content[-250:].lower()
+                    trunc_markers = ("baca selengkapnya", "halaman selanjutnya", "halaman berikutnya", "baca kelanjutannya", "bersambung ke")
+                    if any(tm in tail for tm in trunc_markers):
+                        return None
+
                     return final_url, md_content, title
         except Exception:
             pass
@@ -376,11 +393,21 @@ class HybridAsyncCrawler:
                 }"""
 
                 try:
-                    raw_html = await page.evaluate(eval_js, css_path)
+                    if css_path == "body":
+                        raw_html = await page.content()
+                    else:
+                        raw_html = await page.evaluate(eval_js, css_path)
+                        if not raw_html or len(raw_html.strip()) < 100:
+                            raw_html = await page.content()
                 except Exception:
                     await page.wait_for_timeout(1500)
                     final_url = page.url
-                    raw_html = await page.evaluate(eval_js, css_path)
+                    if css_path == "body":
+                        raw_html = await page.content()
+                    else:
+                        raw_html = await page.evaluate(eval_js, css_path)
+                        if not raw_html or len(raw_html.strip()) < 100:
+                            raw_html = await page.content()
 
                 md_text = convert_html_to_markdown(raw_html, url=final_url, title=page_title)
                 worthy, reason = is_cpt_worthy_content(final_url, md_text, min_words=self.min_words)

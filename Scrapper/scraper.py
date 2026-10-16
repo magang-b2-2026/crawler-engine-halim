@@ -81,33 +81,37 @@ def scrape_with_playwright(
                         css_path = final_css
                         print(f"    -> [Redirect Terbuka] Mendarat di: {final_url} (Selektor: '{css_path}')")
 
-                # Extract innerHTML from target element(s)
-                raw_html = page.evaluate(
-                    """(cssPath) => {
-                        let el = document.querySelector(cssPath);
-                        if (el) {
-                            return el.innerHTML;
-                        }
-                        let nodes = document.querySelectorAll(cssPath);
-                        if (nodes.length > 0) {
-                            let res = '';
-                            nodes.forEach(n => res += '\\n' + n.innerHTML);
-                            return res;
-                        }
-                        return document.body ? document.body.innerHTML : '';
-                    }""",
-                    css_path
-                )
-
-                # Smart Semantic Fallback if selector returned empty or minimal HTML
-                if not raw_html or len(raw_html) < 200:
-                    fallback_html = page.evaluate("""() => {
-                        let article = document.querySelector('article') || document.querySelector('main') || document.querySelector('.article-content') || document.querySelector('.articles-content');
-                        return article ? article.innerHTML : '';
-                    }""")
-                    if fallback_html and len(fallback_html) > len(raw_html):
-                        print("    -> [Smart Fallback] Ekstraksi dari tag semantik <article>/<main> aktif")
-                        raw_html = fallback_html
+                # Extract innerHTML from target element(s) or full document if body
+                if css_path == "body":
+                    raw_html = page.content()
+                else:
+                    raw_html = page.evaluate(
+                        """(cssPath) => {
+                            let el = document.querySelector(cssPath);
+                            if (el) {
+                                return el.innerHTML;
+                            }
+                            let nodes = document.querySelectorAll(cssPath);
+                            if (nodes.length > 0) {
+                                let res = '';
+                                nodes.forEach(n => res += '\\n' + n.innerHTML);
+                                return res;
+                            }
+                            return '';
+                        }""",
+                        css_path
+                    )
+                    # Smart Semantic Fallback if selector returned empty or minimal HTML
+                    if not raw_html or len(raw_html) < 200:
+                        fallback_html = page.evaluate("""() => {
+                            let article = document.querySelector('article') || document.querySelector('main') || document.querySelector('.article-content') || document.querySelector('.articles-content');
+                            return article ? article.innerHTML : '';
+                        }""")
+                        if fallback_html and len(fallback_html) > len(raw_html):
+                            print("    -> [Smart Fallback] Ekstraksi dari tag semantik <article>/<main> aktif")
+                            raw_html = fallback_html
+                        else:
+                            raw_html = page.content()
 
                 # Convert extracted HTML to clean Markdown
                 scrapped_markdown = convert_html_to_markdown(raw_html, url=final_url, title=page_title)

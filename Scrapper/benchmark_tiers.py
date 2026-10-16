@@ -124,7 +124,12 @@ async def run_pure_tier2(articles: List[Dict], css_map: Dict[str, str], timeout:
                     let sem = document.querySelector('article, main, .article-content');
                     return sem ? sem.innerHTML : (document.body ? document.body.innerHTML : '');
                 }"""
-                raw_html = await page.evaluate(eval_js, css_path)
+                if css_path == "body":
+                    raw_html = await page.content()
+                else:
+                    raw_html = await page.evaluate(eval_js, css_path)
+                    if not raw_html or len(raw_html.strip()) < 100:
+                        raw_html = await page.content()
                 md_text = convert_html_to_markdown(raw_html, url=final_url, title=raw_t or "")
                 worthy, _ = is_cpt_worthy_content(final_url, md_text, min_words=25)
                 if worthy:

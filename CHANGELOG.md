@@ -99,4 +99,29 @@ python Scrapper/pipeline.py --topic "Kecerdasan Buatan Indonesia" --when 7d --li
 ```bash
 python Scrapper/test_qa_suite.py
 ```
-*(Menjalankan 17 unit test otomatis untuk verifikasi kualitas dan keandalan sistem)*.
+*(Menjalankan 20 unit test otomatis untuk verifikasi kualitas, de-duplikasi, penekanan noise script, dan keandalan sistem)*.
+
+---
+
+## 6. Pembaruan Arsitektur: Noise Prevention & Auto-Fallback Escalation (Opsi 2)
+
+**Tanggal Pembaruan:** 16 Oktober 2026  
+**Status QA:** ✅ 20/20 Unit & Regression Tests Passed (0.25s)
+
+### A. Investigasi Forensik Disparitas Kata Skenario 2
+Pada pengujian Skenario 2 (*Hilirisasi Nikel dan Tambang*), ditemukan bahwa 4 dari 5 artikel menghasilkan **100% jumlah kata identik** antara Tier 1 dan Tier 2. Disparitas kata terkonsentrasi pada artikel *transisienergiberkeadilan.id*:
+* Teks artikel orisinal: **968 kata**.
+* Tier 1 (*Fast-Path Trafilatura*) mengekstrak teks orisinal **968 kata** dengan bersih.
+* Tier 2 sebelumnya mengekstrak `document.body.innerHTML`. Karena fragmen tersebut tidak memiliki tag `<html>/<head>`, Trafilatura mengembalikan `None` dan jatuh ke *Markdownify*. Akibatnya, payload Next.js React Flight Streaming Data (`__NEXT_DATA__`, dataLayer, CSS emotion) ikut terkonversi menjadi teks sehingga membengkak menjadi **3.975 kata** (*false positive noise*).
+
+### B. Implementasi Perbaikan:
+1. **Noise Prevention Fix di Tier 2:**
+   * Jika selector bernilai `"body"`, Playwright mengekstrak `page.content()` (dokumen HTML lengkap) alih-alih `body.innerHTML`, sehingga Trafilatura mengenali hierarki DOM penuh dan membuang semua script/style.
+   * Pada fungsi [`convert_html_to_markdown`](file:///e:/Coding/Coding/KOMDIGI/Crawler%20Mas%20Anjas/Scrapper/pipeline.py#L86), ditambahkan sanitasi pembersihan regex `<script>`, `<style>`, dan `<noscript>` beserta seluruh isinya sebelum diproses *Markdownify*.
+   * **Hasil Verifikasi Lapangan:** Selisih kata pada artikel ke-5 turun dari 3.007 kata menjadi **0 kata (968 vs 968 kata, 100% paritas teks)**.
+2. **Auto-Fallback Escalation di Tier 1:**
+   * Ditambahkan deteksi unhydrated SPA: Jika terdeteksi marker state framework client-side (`__NEXT_DATA__`, `window.__INITIAL_STATE__`, `__NUXT__`) namun jumlah kata $< 120$, Tier 1 otomatis mengembalikan `None` dan mengeskalasikan ke Tier 2 Playwright.
+   * Ditambahkan deteksi pemotongan teks (*truncation markers*): Jika ekor teks memuat frasa seperti *"baca selengkapnya"*, *"halaman selanjutnya"*, atau *"baca kelanjutannya"*, artikel otomatis dielevasi ke Tier 2 Playwright untuk rendering multi-halaman/interaktif.
+3. **Penyempurnaan QA Suite:**
+   * Menambahkan `test_nextjs_and_script_noise_suppressed`, `test_unwrapped_html_fragment_safe`, dan `test_truncation_and_unhydrated_spa_detection` pada [`Scrapper/test_qa_suite.py`](file:///e:/Coding/Coding/KOMDIGI/Crawler%20Mas%20Anjas/Scrapper/test_qa_suite.py). Total pengujian meningkat dari 17 menjadi 20 pengujian otomatis (100% lolos).
+
