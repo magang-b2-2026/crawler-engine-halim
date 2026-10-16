@@ -1,2 +1,5 @@
 venv
 .venv
+__pycache__/
+*.pyc
+Scrapper/test_tier2_input.txt

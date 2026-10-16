@@ -1,79 +1,87 @@
 # LOG PERUBAHAN & PENYEMPURNAAN SISTEM CRAWLER (CHANGELOG)
 
-**Tanggal:** 15 Oktober 2026  
+**Tanggal:** 16 Oktober 2026  
 **Arsitek Sistem:** Naufal Halim  
 **Repositori:** `Crawler Mas Anjas (AITF Engine & Web Content Scraper)`  
-**Status QA:** ✅ Passed (100% Verified)
+**Status QA:** ✅ 100% Passed (17 Unit & Regression Tests + Real-World Scenario Stress Tests)
 
 ---
 
-## 1. Ringkasan Pembaruan Utama
+## 1. Ringkasan Pembaruan Arsitektur Utama (v3.0)
 
-| No | Modul / Komponen | Perubahan yang Diterapkan | Status |
-| :--- | :--- | :--- | :---: |
-| 1 | `Scrapper/scraper.py` | Mengubah nilai default `--css-path` dari `"body p"` menjadi `"body"`. | ✅ Selesai |
-| 2 | `Scrapper/sample_css_paths.csv` | Menambahkan pemetaan CSS Selector 30+ media berita kredibel (Google News & Inilah.com). | ✅ Selesai |
-| 3 | `Scrapper/scraper.py` | Mengubah mekanisme ekstraksi JavaScript dari `innerText` ke `innerHTML`. | ✅ Selesai |
-| 4 | `Scrapper/scraper.py` | Integrasi library Python `trafilatura` dan `markdownify` untuk konversi otomatis HTML ke Markdown. | ✅ Selesai |
-| 5 | `Scrapper/google_news_crawler.py` | Membuat engine discovery baru berbasis Google News RSS (`news.google.com/rss/search`) + sintaks `when:Nd`. | ✅ Selesai |
-| 6 | Infrastruktur Proyek | Inisialisasi **CodeGraph** (`.codegraph`) dan pelacakan commit **Git lokal**. | ✅ Selesai |
-
----
-
-## 2. Rincian Teknis Implementasi
-
-### A. Default Selector `"body"` & Ekstraksi `innerHTML`
-* **Sebelum:** Scraper menggunakan `body p` dan `.innerText`. Akibatnya, subjudul (`<h2>`, `<h3>`), tabel, daftar (`<ul>`, `<ol>`), serta teks di luar tag `<p>` hilang atau menggumpal tidak beraturan.
-* **Sesudah:** Scraper menargetkan kontainer artikel atau `"body"` secara default, lalu mengekstrak `innerHTML` lengkap sehingga seluruh elemen semantik (heading, list, paragraf) tertangkap utuh.
-
-### B. Konverter Otomatis HTML ke Markdown (`trafilatura` & `markdownify`)
-* Menggabungkan dua teknologi pemrosesan teks standar AI:
-  1. **`trafilatura`**: Secara cerdas menyaring elemen boilerplate (iklan Google AdSense, banner sponsor, navigasi, dan tombol medsos) langsung ke Markdown bersih.
-  2. **`markdownify`**: Mengubah tag HTML spesifik menjadi sintaks Markdown ATX (`# Judul`, `## Subjudul`, `- Bullet`, `1. Nomor`, `| Tabel |`).
-* Menambahkan blok header Markdown otomatis:
-  ```markdown
-  # [Judul Halaman / Berita]
-  > Sumber: https://...
-  ```
-
-### C. Pemetaan 30+ Portal Berita Kredibel (`sample_css_paths.csv`)
-Telah didefinisikan selektor CSS presisi untuk media berita yang sering diagregasi oleh Google News Indonesia:
-* `inilah.com` $\rightarrow$ `"h1, div.MuiContainer-root p, div[class*='MuiBox'] p, article"` (Next.js / Material-UI)
-* `merdeka.com` $\rightarrow$ `"div.articles-content, div.articles-content__body"`
-* `kompas.com` $\rightarrow$ `"div.read__article, div.read__content, article"`
-* `detik.com` $\rightarrow$ `"div.detail__body-text, article.detail"`
-* `tempo.co` $\rightarrow$ `"div.detail-konten, article.detail-artikel, div#isi"`
-* `cnnindonesia.com` $\rightarrow$ `"div.detail-text, div#detikdetailtext"`
-* `cnbcindonesia.com` $\rightarrow$ `"div.detail_text, div.detail-box"`
-* `antaranews.com`, `kumparan.com`, `tirto.id`, `bisnis.com`, `kontan.co.id`, `katadata.co.id`, `republika.co.id`, `suara.com`, `sindonews.com`, `mediaindonesia.com`, `jawapos.com`, `viva.co.id`, `idntimes.com`, dll.
-
-### D. Google News RSS Discovery Engine (`google_news_crawler.py`)
-* Memanfaatkan endpoint pencarian resmi Google News:
-  `https://news.google.com/rss/search?q={query}+when:{when}&hl=id&gl=ID&ceid=ID:id`
-* **Keunggulan:**
-  * Zero-browser (tidak memerlukan Chrome/Selenium pada tahap penemuan).
-  * Kecepatan tinggi (< 2 detik untuk mengambil 100 URL).
-  * Bebas dari ancaman pemblokiran CAPTCHA Google Search.
-  * Mendukung filter kebaruan waktu (`when:1d`, `when:7d`, `when:30d`).
+| No | Opsi Peningkatan | Modul / Berkas | Deskripsi Implementasi | Status |
+| :---: | :--- | :--- | :--- | :---: |
+| 1 | **Opsi 1: Async Concurrency Pool** | `Scrapper/pipeline.py` | Worker pool asinkron berbasis `asyncio.Semaphore` dan Playwright async API untuk eksekusi scraping paralel berkecepatan tinggi. | ✅ Selesai |
+| 2 | **Opsi 2: Hybrid Fast-Path (Two-Tier)** | `Scrapper/pipeline.py` | Ekstraksi dua tingkat: **Tier 1 (Fast-Path HTTPX + Trafilatura)** untuk portal statis (< 400ms) dan **Tier 2 (Async Playwright Stealth)** untuk WAF/JS-rendering. | ✅ Selesai |
+| 3 | **Opsi 3: Semantic Deduplication** | `Scrapper/pipeline.py` | Filter duplikasi semantik menggunakan N-gram Shingling (Jaccard & Containment Overlap) guna mendeteksi dan membuang berita sindikasi/rilis pers kembar (> 80%). | ✅ Selesai |
+| 4 | **Opsi 5: One-Click Pipeline CLI** | `Scrapper/pipeline.py` | Orkestrator terpadu satu perintah: Topik $\to$ Google News RSS Discovery $\to$ Batch URL Decoding $\to$ Hybrid Async Extraction $\to$ Quality Gate $\to$ Deduplikasi $\to$ Export Dataset (Markdown & JSONL). | ✅ Selesai |
+| 5 | **Regresi & Testing QA Suite** | `Scrapper/test_qa_suite.py` | 17 pengujian otomatis menyeluruh untuk menguji logika filter CPT, routing CSS, de-entitizing HTML, deduplikasi, dan ekspor berkas. | ✅ Selesai |
 
 ---
 
-## 3. Hasil Pengujian QA (Quality Assurance)
+## 2. Temuan Audit Logika & Bug Hunting (Cacat Sistem yang Berhasil Dibenahi)
 
-### Uji 1: Ekstraksi Halaman Resep & Berita (Merdeka.com)
-* **Target:** `https://www.merdeka.com/trending/read/7967897/...`
-* **Hasil:**
-  * Berhasil mengekstrak 748 kata Markdown.
-  * 4 Subjudul (`##`) terformat sempurna.
-  * Iklan `<div id="div-gpt-ad...">` otomatis dilenyapkan.
-  * Lolos CPT Quality Gatekeeper.
+Selama pengujian QA dan uji skenario, ditemukan 5 cacat logika kritis yang telah diidentifikasi dan dituntaskan:
 
-### Uji 2: Ekstraksi Google News RSS
-* **Kueri:** `"Kecerdasan Buatan" when:3d`
-* **Hasil:** Menemukan 100 artikel kredibel (Kontan, Kompas, Canva/Kemenag, IDNFinancials, dll.) dalam waktu 1.8 detik dan disimpan ke `output/google_news_sample.txt`.
+1. **Cacat #1: Kebocoran Memori / Zombie Context pada Playwright**
+   * *Masalah:* Blok `try` pada navigasi halaman menutup browser context di akhir alur normal. Jika terjadi timeout navigasi atau network drop, penutupan `context.close()` dan `page.close()` terlewati, meninggalkan proses Chromium zombie di background.
+   * *Solusi:* Memindahkan seluruh pembersihan resource Playwright ke dalam blok `finally`, menjamin context dan page selalu ditutup tanpa peduli status error yang terjadi.
+
+2. **Cacat #2: Kebocoran Entitas HTML pada Judul Artikel**
+   * *Masalah:* Judul dari RSS atau metadata `<title>` kerap memuat kode entitas HTML seperti `&#8211;`, `&amp;`, `&quot;`, `&#039;`, dan spasi berlebih.
+   * *Solusi:* Mengintegrasikan pustaka `html.unescape()` dan normalisasi spasi regex sebelum judul diformat ke Markdown maupun JSONL.
+
+3. **Cacat #3: False Positive Deduplikasi pada Ringkasan Pendek (Containment Flaw)**
+   * *Masalah:* Pada formula awal Containment Overlap ($\frac{|A \cap B|}{\min(|A|, |B|)}$), ringkasan pendek berisi 10 kata yang kebetulan memiliki 8 kata yang sama dengan artikel panjang 2000 kata akan menghasilkan containment 80% (false positive duplicate), menyebabkan artikel valid terbuang.
+   * *Solusi:* Menambahkan guard: Containment hanya aktif jika kedua dokumen memiliki minimal 25 shingles dan rasio panjang kedua dokumen sebanding ($\frac{\min}{\max} \ge 0.35$).
+
+4. **Cacat #4: Pemblokiran SSL pada Portal Berita Daerah / Instansi**
+   * *Masalah:* Banyak media lokal dan portal daerah Indonesia (misal: `beritanasionalupdate.com`, situs pemkab) memiliki sertifikat SSL expired atau hostname mismatch (`ERR_CERT_COMMON_NAME_INVALID`).
+   * *Solusi:* Mengonfigurasi `verify=False` pada HTTPX AsyncClient dan `ignore_https_errors=True` pada Playwright context, sehingga crawler dapat mengekstrak konten daerah secara andal.
+
+5. **Cacat #5: Rusaknya Execution Context akibat Redirect Susulan Playwright**
+   * *Masalah:* URL Google News redirect (`news.google.com/rss/articles/...`) melakukan navigasi dua tahap. Memanggil `page.evaluate()` saat navigasi kedua masih berjalan menyebabkan exception: `Execution context was destroyed, most likely because of a navigation`.
+   * *Solusi:* Menambahkan stabilisasi URL (`wait_for_url` hingga keluar dari domain Google) dan wrapper retry pada `page.evaluate()` jika terdeteksi context destruction.
 
 ---
 
-## 4. Pelacakan Repositori & CodeGraph
-* **CodeGraph:** Diinisialisasi (`codegraph init`), menghasilkan indeks 7 berkas kode dengan 28 node dan 44 edge relasi.
-* **Git:** Status perubahan disimpan secara lokal tanpa remote push ke GitHub sesuai batasan proyek.
+## 3. Hasil Benchmark Kecepatan & Uji Skenario
+
+### Skenario 1: Topik "Kecerdasan Buatan Indonesia" (10 Artikel)
+* **Waktu Total:** 10.01 detik (1.00 artikel / detik).
+* **Throughput:** 10/10 artikel lolos CPT Bersih (8,322 kata).
+* **Rasio Jalur:** 100% Tier 1 Fast-Path (rata-rata kecepatan 90ms - 635ms per artikel).
+
+### Skenario 2: Topik "Komdigi Berantas Judi Online" (8 Artikel Media Nasional & Daerah)
+* **Waktu Total:** 7.98 detik.
+* **Throughput:** 8/8 artikel sukses (2,390 kata).
+* **Uji Toleransi SSL:** Berhasil mengekstrak `beritanasionalupdate.com` yang memiliki certificate mismatch dalam 482ms tanpa error.
+
+### Skenario 3: Uji Fallback Playwright Tier 2 (Link Dinamis Google News)
+* **Waktu Ekstraksi:** 7.8 detik.
+* **Hasil:** Mendarat di `detik.com`, CSS selector teresolusi dinamis ke `.detail__body-text`, ekstraksi 551 kata Markdown bersih dengan format ATX.
+
+---
+
+## 4. Cara Menjalankan Pipeline Produksi (Panduan Perintah)
+
+### A. Eksekusi Satu Perintah (One-Click Pipeline):
+```bash
+python Scrapper/pipeline.py --topic "Kecerdasan Buatan Indonesia" --when 7d --limit 20 --output Scrapper/output/dataset_cpt.md --format all
+```
+
+### B. Opsi Argumen Lengkap:
+* `--topic`, `-t`: Kata kunci topik berita Google News.
+* `--urls`, `-u`: Menggunakan berkas daftar URL kustom (alternatif dari topik).
+* `--when`, `-w`: Filter waktu kebaruan berita (`1d`, `3d`, `7d`, `30d`). Default: `7d`.
+* `--limit`, `-l`: Batas maksimal artikel yang diambil. Default: `30`.
+* `--output`, `-o`: Lokasi berkas dataset hasil. Default: `Scrapper/output/dataset_cpt.md`.
+* `--format`, `-f`: Format luaran dataset (`md`, `jsonl`, atau `all`). Default: `all`.
+* `--concurrency`, `-c`: Batas paralel worker asinkron. Default: `8`.
+* `--sim-threshold`, `-s`: Ambang batas kemiripan deduplikasi semantik (0.0 - 1.0). Default: `0.80`.
+
+### C. Menjalankan Regression Test Suite:
+```bash
+python Scrapper/test_qa_suite.py
+```
+*(Menjalankan 17 unit test otomatis untuk verifikasi kualitas dan keandalan sistem)*.
