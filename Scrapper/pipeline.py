@@ -7,8 +7,7 @@ Arsitektur Terpadu:
 - Opsi 3: Semantic Deduplication (N-gram Shingling Jaccard & Containment Overlap)
 - Opsi 5: One-Click End-to-End CLI Pipeline (Discovery -> Extraction -> Quality Gate -> Deduplication -> Dataset Export)
 
-Author: Naufal Halim
-Proyek: Continual Pre-Training (CPT) Dataset Engine - KOMDIGI
+Author: Naufal Halim | Proyek: Continual Pre-Training (CPT) Dataset Engine - KOMDIGI
 """
 
 import argparse
@@ -68,9 +67,9 @@ def get_css_selector_for_url(
     domain = urlparse(url if "://" in url else f"https://{url}").netloc.lower()
     dom_no_www = domain.removeprefix("www.")
 
-    for key in (norm, domain, dom_no_www):
-        if key in css_paths_map:
-            return css_paths_map[key], True
+    for k in (norm, domain, dom_no_www):
+        if k in css_paths_map:
+            return css_paths_map[k], True
 
     for k, sel in css_paths_map.items():
         if k in norm or k in domain:
@@ -88,26 +87,17 @@ def convert_html_to_markdown(html_content: str, url: str = "", title: str = "") 
     if not html_content or not html_content.strip():
         return ""
 
-    raw_to_parse = html_content
-    if "<html" not in html_content[:300].lower() and "<body" not in html_content[:300].lower():
-        raw_to_parse = f"<!DOCTYPE html><html><body>{html_content}</body></html>"
-
+    raw = html_content if ("<html" in html_content[:300].lower() or "<body" in html_content[:300].lower()) else f"<!DOCTYPE html><html><body>{html_content}</body></html>"
     try:
-        extracted = trafilatura.extract(
-            raw_to_parse, output_format="markdown", include_tables=True, include_links=False, favor_precision=True
-        )
-        if extracted and len(extracted.split()) >= 15:
-            return extracted.strip()
+        ext = trafilatura.extract(raw, output_format="markdown", include_tables=True, include_links=False, favor_precision=True)
+        if ext and len(ext.split()) >= 15:
+            return ext.strip()
     except Exception:
         pass
 
     try:
         sanitized = re.sub(r"<(script|style|noscript)[^>]*>.*?</\1>", "", html_content, flags=re.I | re.S)
-        res = md(
-            sanitized,
-            heading_style="ATX",
-            strip=["nav", "footer", "aside", "iframe", "form"],
-        )
+        res = md(sanitized, heading_style="ATX", strip=["nav", "footer", "aside", "iframe", "form"])
         res = re.sub(r"\n{3,}", "\n\n", res).strip()
         if res and len(res.split()) >= 15:
             return res
@@ -168,17 +158,12 @@ class SemanticDeduplicator:
 
     def _get_shingles(self, text: str) -> Set[str]:
         words = re.findall(r"\b[a-zA-Z0-9\u00C0-\u024F]{2,}\b", text.lower())
-        if len(words) < self.k_shingle:
-            return set(words)
-        return {" ".join(words[i : i + self.k_shingle]) for i in range(len(words) - self.k_shingle + 1)}
+        return set(words) if len(words) < self.k_shingle else {" ".join(words[i : i + self.k_shingle]) for i in range(len(words) - self.k_shingle + 1)}
 
     def check_duplicate(self, url: str, title: str, source: str, content: str) -> Tuple[bool, Optional[Dict]]:
         norm_url = normalize_url_key(url)
         if norm_url in self.seen_urls:
-            return True, {
-                "matched_url": url, "matched_title": title, "matched_source": source,
-                "jaccard": 100.0, "containment": 100.0, "similarity_score": 100.0,
-            }
+            return True, {"matched_url": url, "matched_title": title, "matched_source": source, "jaccard": 100.0, "containment": 100.0, "similarity_score": 100.0}
 
         shingles = self._get_shingles(content)
         if not shingles:
@@ -186,14 +171,12 @@ class SemanticDeduplicator:
 
         for seen in self.seen_articles:
             s_seen = seen["shingles"]
-            inter = len(shingles & s_seen)
-            union = len(shingles | s_seen)
+            inter, union = len(shingles & s_seen), len(shingles | s_seen)
             jaccard = inter / union if union > 0 else 0.0
-
-            min_len, max_len = min(len(shingles), len(s_seen)), max(len(shingles), len(s_seen))
-            containment = (inter / min_len) if (min_len >= 25 and min_len / max_len >= 0.35) else 0.0
-
+            min_l, max_l = min(len(shingles), len(s_seen)), max(len(shingles), len(s_seen))
+            containment = (inter / min_l) if (min_l >= 25 and min_l / max_l >= 0.35) else 0.0
             max_sim = max(jaccard, containment)
+
             if max_sim >= self.threshold:
                 return True, {
                     "matched_url": seen["url"], "matched_title": seen["title"], "matched_source": seen["source"],
@@ -217,8 +200,7 @@ def fetch_google_news_rss(query: str, when: str = "7d", limit: int = 30) -> List
 
     try:
         resp = httpx.get(rss_url, headers={"User-Agent": "Mozilla/5.0"}, timeout=20)
-        root = ET.fromstring(resp.content)
-        items = root.findall(".//item")
+        items = ET.fromstring(resp.content).findall(".//item")
         print(f"[*] Ditemukan {len(items)} artikel di feed Google News.")
         return [
             {
@@ -245,15 +227,13 @@ def batch_decode_google_news_urls(articles: List[Dict[str, str]]) -> List[Dict[s
         from googlenewsdecoder import GoogleDecoder
         with GoogleDecoder(timeout=10.0) as dec:
             results = dec.decode_google_news_urls([a["link"] for a in articles])
-        decoded = sum(1 for res in results if res.get("success"))
         for a, res in zip(articles, results):
             a["decoded_url"] = res.get("decoded_url") if res.get("success") else a["link"]
-        print(f"[OK] Berhasil mendekode {decoded}/{len(articles)} URL.")
+        print(f"[OK] Berhasil mendekode {sum(1 for r in results if r.get('success'))}/{len(articles)} URL.")
     except Exception as e:
         print(f"[!] Info decoder: {e}")
         for a in articles:
             a["decoded_url"] = a["link"]
-
     return articles
 
 
@@ -392,22 +372,18 @@ class HybridAsyncCrawler:
                     return sem ? sem.innerHTML : (document.body ? document.body.innerHTML : '');
                 }"""
 
-                try:
+                async def _extract_html():
                     if css_path == "body":
-                        raw_html = await page.content()
-                    else:
-                        raw_html = await page.evaluate(eval_js, css_path)
-                        if not raw_html or len(raw_html.strip()) < 100:
-                            raw_html = await page.content()
+                        return await page.content()
+                    res = await page.evaluate(eval_js, css_path)
+                    return res if (res and len(res.strip()) >= 100) else await page.content()
+
+                try:
+                    raw_html = await _extract_html()
                 except Exception:
                     await page.wait_for_timeout(1500)
                     final_url = page.url
-                    if css_path == "body":
-                        raw_html = await page.content()
-                    else:
-                        raw_html = await page.evaluate(eval_js, css_path)
-                        if not raw_html or len(raw_html.strip()) < 100:
-                            raw_html = await page.content()
+                    raw_html = await _extract_html()
 
                 md_text = convert_html_to_markdown(raw_html, url=final_url, title=page_title)
                 worthy, reason = is_cpt_worthy_content(final_url, md_text, min_words=self.min_words)
@@ -415,10 +391,8 @@ class HybridAsyncCrawler:
 
                 elapsed_ms = (time.time() - t0) * 1000
                 words = len(md_text.split()) if md_text else 0
-                if status == "SUCCESS":
-                    print(f"[{idx}/{total}] [TIER 2 - PLAYWRIGHT] ({elapsed_ms:.0f}ms | {words} kata) [{source}] {final_url[:75]}...")
-                else:
-                    print(f"[{idx}/{total}] [QUALITY GATE FILTERED] {reason} | [{source}] {final_url[:70]}...")
+                tag = "[TIER 2 - PLAYWRIGHT]" if status == "SUCCESS" else "[QUALITY GATE FILTERED]"
+                print(f"[{idx}/{total}] {tag} ({elapsed_ms:.0f}ms | {words} kata) [{source}] {final_url[:70]}...")
 
             except Exception as e:
                 status = f"ERROR: {e}"
@@ -446,16 +420,10 @@ class HybridAsyncCrawler:
 
         async with httpx.AsyncClient(timeout=self.timeout, limits=limits, verify=False) as http_client:
             async with async_playwright() as p:
-                browser = await p.chromium.launch(
-                    headless=self.headless, args=["--disable-blink-features=AutomationControlled", "--no-sandbox"]
-                )
-                tasks = [
-                    self._crawl_single_article(art, http_client, browser, idx, len(articles))
-                    for idx, art in enumerate(articles, 1)
-                ]
+                browser = await p.chromium.launch(headless=self.headless, args=["--disable-blink-features=AutomationControlled", "--no-sandbox"])
+                tasks = [self._crawl_single_article(art, http_client, browser, idx, len(articles)) for idx, art in enumerate(articles, 1)]
                 results = await asyncio.gather(*tasks)
                 await browser.close()
-
         return results
 
 
@@ -477,9 +445,7 @@ def export_dataset(
     os.makedirs(out_dir, exist_ok=True)
     base = os.path.splitext(os.path.basename(output_path))[0]
 
-    md_file = os.path.join(out_dir, f"{base}.md")
-    jsonl_file = os.path.join(out_dir, f"{base}.jsonl")
-    log_file = os.path.join(out_dir, f"{base}.log")
+    md_file, jsonl_file, log_file = os.path.join(out_dir, f"{base}.md"), os.path.join(out_dir, f"{base}.jsonl"), os.path.join(out_dir, f"{base}.log")
 
     valid_cpt = [r for r in results if r["status"] == "SUCCESS" and r["content"]]
     failed_or_filtered = [r for r in results if r["status"] != "SUCCESS" or not r["content"]]
@@ -500,11 +466,7 @@ def export_dataset(
         docs = []
         for it in unique_items:
             body = re.sub(r"^#\s+[^\n]+\n+", "", it["content"].strip()) if it["content"].strip().startswith("# ") else it["content"].strip()
-            docs.append(
-                f"# {it['title']}\n\n> **Sumber:** [{it['source']}]({it['url']})\n"
-                f"> **Tanggal Publikasi:** {it.get('pub_date', '-')}\n"
-                f"> **Jalur Ekstraksi:** `{it['tier']}` | **Jumlah Kata:** {it['word_count']} kata\n\n{body}"
-            )
+            docs.append(f"# {it['title']}\n\n> **Sumber:** [{it['source']}]({it['url']})\n> **Tanggal Publikasi:** {it.get('pub_date', '-')}\n> **Jalur Ekstraksi:** `{it['tier']}` | **Jumlah Kata:** {it['word_count']} kata\n\n{body}")
         with open(md_file, "w", encoding="utf-8") as f:
             f.write("\n\n---\n\n".join(docs) + "\n")
         print(f"[OK] Dataset Markdown disimpan ke: {md_file}")
@@ -586,7 +548,6 @@ def main():
 
     args = parser.parse_args()
     start_time = time.time()
-
     css_map = load_css_paths(args.css_paths)
     print(f"[*] Memuat {len(css_map)} pemetaan CSS selector dari {args.css_paths}")
 
@@ -599,10 +560,7 @@ def main():
             print(f"[Error] File '{args.urls}' tidak ditemukan.")
             return
         with open(args.urls, "r", encoding="utf-8") as f:
-            articles = [
-                {"title": "", "link": u, "source": "Custom URL", "pub_date": "", "decoded_url": u}
-                for u in (line.strip() for line in f) if u and not u.startswith("#") and u.lower() != "url"
-            ][:args.limit]
+            articles = [{"title": "", "link": u, "source": "Custom URL", "pub_date": "", "decoded_url": u} for u in (line.strip() for line in f) if u and not u.startswith("#") and u.lower() != "url"][:args.limit]
         print(f"[*] Memuat {len(articles)} URL dari {args.urls}")
 
     if not articles:
@@ -613,12 +571,9 @@ def main():
         css_paths_map=css_map, default_css_path=args.default_css, concurrency=args.concurrency,
         timeout=args.timeout, min_words=args.min_words, headless=not args.headful,
     )
-
     results = asyncio.run(crawler.crawl_articles(articles))
     dedup = SemanticDeduplicator(threshold=args.sim_threshold)
-    export_dataset(
-        results, dedup, args.output, args.format, topic=args.topic or "", when=args.when, total_time_sec=time.time() - start_time
-    )
+    export_dataset(results, dedup, args.output, args.format, topic=args.topic or "", when=args.when, total_time_sec=time.time() - start_time)
 
 
 if __name__ == "__main__":
