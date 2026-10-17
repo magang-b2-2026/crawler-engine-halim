@@ -26,6 +26,7 @@ from Scrapper.pipeline import (
     convert_html_to_markdown,
     normalize_url_key,
     export_dataset,
+    sanitize_cpt_text,
 )
 
 
@@ -225,12 +226,10 @@ class TestHTMLEntityAndMarkdown(unittest.TestCase):
 
 
 class TestDatasetExporter(unittest.TestCase):
-    def test_export_structure(self):
+    def test_export_structure_each_mode(self):
+        """Uji mode default 'each': 1 artikel = 1 file .md di dalam folder dataset."""
         with tempfile.TemporaryDirectory() as tmpdir:
-            out_md = os.path.join(tmpdir, "test_dataset.md")
-            out_jsonl = os.path.join(tmpdir, "test_dataset.jsonl")
-            out_log = os.path.join(tmpdir, "test_dataset.log")
-
+            out_target = os.path.join(tmpdir, "test_dataset")
             sample_results = [
                 {
                     "url": "https://media.com/1",
@@ -246,19 +245,126 @@ class TestDatasetExporter(unittest.TestCase):
             ]
 
             dedup = SemanticDeduplicator()
-            export_dataset(sample_results, dedup, out_md, output_format="all", topic="Uji AI")
+            export_dataset(sample_results, dedup, out_target, output_format="all", output_mode="each", topic="Uji AI")
 
-            self.assertTrue(os.path.exists(out_md), "File .md harus terbuat")
-            self.assertTrue(os.path.exists(out_jsonl), "File .jsonl harus terbuat")
-            self.assertTrue(os.path.exists(out_log), "File .log harus terbuat")
+            dataset_dir = os.path.join(tmpdir, "test_dataset")
+            self.assertTrue(os.path.isdir(dataset_dir), "Folder dataset harus terbuat")
 
-            # Verifikasi isi JSONL valid JSON per baris
-            with open(out_jsonl, "r", encoding="utf-8") as f:
-                line = f.readline()
-                data = json.loads(line)
+            md_files = [f for f in os.listdir(dataset_dir) if f.endswith(".md")]
+            self.assertEqual(len(md_files), 1, "Harus menghasilkan tepat 1 file .md per artikel")
+            self.assertTrue(md_files[0].startswith("article_001_"))
+
+            jsonl_file = os.path.join(dataset_dir, "test_dataset.jsonl")
+            log_file = os.path.join(dataset_dir, "test_dataset.log")
+            self.assertTrue(os.path.exists(jsonl_file), "File .jsonl harus terbuat di folder dataset")
+            self.assertTrue(os.path.exists(log_file), "File .log harus terbuat di folder dataset")
+
+            with open(jsonl_file, "r", encoding="utf-8") as f:
+                data = json.loads(f.readline())
                 self.assertEqual(data["title"], "Inovasi AI Indonesia")
                 self.assertEqual(data["tier"], "TIER1_FAST_PATH")
                 self.assertIn("crawled_at", data)
+
+    def test_export_structure_merge_mode(self):
+        """Uji mode 'merge' untuk backward-compatibility file gabungan tunggal."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            out_md = os.path.join(tmpdir, "test_dataset.md")
+            sample_results = [
+                {
+                    "url": "https://media.com/1",
+                    "raw_url": "https://media.com/1",
+                    "title": "Inovasi AI Indonesia",
+                    "source": "Media Nasional",
+                    "pub_date": "Wed, 14 Oct 2026",
+                    "tier": "TIER1_FAST_PATH",
+                    "content": "Ini adalah isi artikel.",
+                    "word_count": 5,
+                    "status": "SUCCESS",
+                }
+            ]
+
+            dedup = SemanticDeduplicator()
+            export_dataset(sample_results, dedup, out_md, output_format="all", output_mode="merge", topic="Uji AI")
+
+            self.assertTrue(os.path.exists(out_md), "File .md merge harus terbuat")
+            self.assertTrue(os.path.exists(os.path.join(tmpdir, "test_dataset.jsonl")), "File .jsonl harus terbuat")
+            self.assertTrue(os.path.exists(os.path.join(tmpdir, "test_dataset.log")), "File .log harus terbuat")
+
+
+class TestCPTTextSanitizer(unittest.TestCase):
+    """Pengujian unit komprehensif untuk sanitasi dataset CPT (tanda petik, unicode, derau berita)."""
+
+    def test_curly_and_fancy_quotes_normalized_to_ascii(self):
+        """Memastikan semua variasi tanda petik miring/fancy dinormalkan menjadi ASCII double-quote murni."""
+        raw = "Menteri menegaskan: “Kecerdasan Buatan” dan «Teknologi Informasi» adalah prioritas utama „digitalisasi″."
+        clean = sanitize_cpt_text(raw)
+        self.assertNotIn("“", clean)
+        self.assertNotIn("”", clean)
+        self.assertNotIn("«", clean)
+        self.assertNotIn("»", clean)
+        self.assertIn('"Kecerdasan Buatan"', clean)
+        self.assertIn('"Teknologi Informasi"', clean)
+
+    def test_apostrophes_and_single_quotes_normalized(self):
+        """Memastikan apostrof miring dan petik tunggal menjadi ASCII 39 (')."""
+        raw = "Kebijakan ini disahkan pada hari Jum’at dengan rujukan Al-Qur’an serta petik ‘inovasi’."
+        clean = sanitize_cpt_text(raw)
+        self.assertNotIn("’", clean)
+        self.assertNotIn("‘", clean)
+        self.assertIn("Jum'at", clean)
+        self.assertIn("Al-Qur'an", clean)
+        self.assertIn("'inovasi'", clean)
+
+    def test_invisible_whitespace_and_soft_hyphens_purged(self):
+        """Memastikan karakter tak kasat mata (NBSP, ZWSP, BOM, soft-hyphen) dibersihkan."""
+        raw = "Kementerian\u00a0Komunikasi\u200bdan\ufeffDigital In\u00adfor\u00adma\u00adsi"
+        clean = sanitize_cpt_text(raw)
+        self.assertNotIn("\u00a0", clean)
+        self.assertNotIn("\u200b", clean)
+        self.assertNotIn("\ufeff", clean)
+        self.assertNotIn("\u00ad", clean)
+        self.assertEqual(clean, "Kementerian Komunikasi dan Digital Informasi")
+
+    def test_dashes_and_ranges_normalized(self):
+        """Memastikan en-dash/em-dash pada rentang angka dan klausa jeda dinormalkan."""
+        raw = "Periode 2024–2026 ini — menurut kajian — sangat penting."
+        clean = sanitize_cpt_text(raw)
+        self.assertIn("2024-2026", clean)
+        self.assertIn(" - menurut kajian - ", clean)
+
+    def test_dateline_purged_from_first_content_paragraph(self):
+        """Memastikan dateline jurnalistik di awal berita dibersihkan agar kalimat langsung ke subjek."""
+        raw = (
+            "# Judul Berita Utama\n\n"
+            "JAKARTA, KOMPAS.com - Menteri Komunikasi dan Digital Meutya Hafid menegaskan percepatan AI.\n\n"
+            "Kalimat paragraf kedua tetap utuh."
+        )
+        clean = sanitize_cpt_text(raw)
+        self.assertIn("# Judul Berita Utama", clean)
+        self.assertNotIn("JAKARTA, KOMPAS.com -", clean)
+        self.assertIn("Menteri Komunikasi dan Digital Meutya Hafid menegaskan", clean)
+        self.assertIn("Kalimat paragraf kedua tetap utuh.", clean)
+
+    def test_in_article_noise_and_editorial_signatures_purged(self):
+        """Memastikan 'Baca juga', 'Simak video', 'Penulis/Editor', dan inisial redaksi dibuang."""
+        raw = (
+            "# Transformasi Digital\n\n"
+            "Pemerintah terus memperkuat hilirisasi teknologi.\n\n"
+            "Baca juga: Menkomdigi Resmikan Fasilitas Cloud AI\n\n"
+            "Infrastruktur data center ramah lingkungan dibangun di berbagai daerah.\n\n"
+            "Simak Video: Wawancara Khusus Terkait Regulasi Digital\n\n"
+            "[Gambas:Video 20detik]\n\n"
+            "Penulis: Ahmad Rifai | Editor: Budi Santoso\n\n"
+            "(kcm/ard)"
+        )
+        clean = sanitize_cpt_text(raw)
+        self.assertNotIn("Baca juga:", clean)
+        self.assertNotIn("Simak Video:", clean)
+        self.assertNotIn("[Gambas:", clean)
+        self.assertNotIn("Penulis: Ahmad Rifai", clean)
+        self.assertNotIn("(kcm/ard)", clean)
+        self.assertIn("Pemerintah terus memperkuat hilirisasi teknologi.", clean)
+        self.assertIn("Infrastruktur data center ramah lingkungan dibangun di berbagai daerah.", clean)
 
 
 if __name__ == "__main__":

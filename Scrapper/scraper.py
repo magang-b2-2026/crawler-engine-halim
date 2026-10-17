@@ -13,6 +13,21 @@ import time
 from urllib.parse import urlparse
 from typing import Dict, List, Optional
 
+# Windows UTF-8 console output guard (cegah charmap cp1252 crash pada karakter internasional)
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
+# Auto-switch to project .venv python if executed under an unactivated/incompatible python (e.g. Python 3.14)
+venv_py = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".venv", "Scripts", "python.exe"))
+if os.path.isfile(venv_py) and os.path.abspath(sys.executable).lower() != venv_py.lower() and not os.environ.get("_CRAWLER_VENV_ACTIVE"):
+    os.environ["_CRAWLER_VENV_ACTIVE"] = "1"
+    import subprocess
+    sys.exit(subprocess.call([venv_py] + sys.argv))
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from Scrapper.pipeline import (
     load_css_paths,
@@ -223,8 +238,11 @@ def save_output(results: List[Dict[str, str]], output_target: str, output_mode: 
         print(f"[OK] {len(valid_items)} artikel bersih disimpan ke: {os.path.abspath(output_target)}")
     elif output_mode == "each":
         for idx, it in enumerate(valid_items, 1):
-            domain_slug = re.sub(r"[^\w\-_\.]", "_", urlparse(it["url"]).netloc or "url")
-            filepath = os.path.join(out_dir, f"scraped_{idx:03d}_{domain_slug}.md")
+            domain_slug = re.sub(r"[^\w\-_\.]", "_", urlparse(it["url"]).netloc.replace("www.", "") or "url").strip("_")
+            title_slug = re.sub(r"[^\w\s-]", "", it.get("title", "")).strip().lower()
+            title_slug = re.sub(r"[-\s]+", "_", title_slug)[:45].strip("_")
+            file_name = f"article_{idx:03d}_{domain_slug}_{title_slug}.md" if title_slug else f"article_{idx:03d}_{domain_slug}.md"
+            filepath = os.path.join(out_dir, file_name)
             with open(filepath, "w", encoding="utf-8") as f:
                 f.write(f"{it['content'].strip()}\n")
         print(f"[OK] {len(valid_items)} file dataset CPT tersimpan di: {os.path.abspath(out_dir)}")
@@ -234,7 +252,7 @@ def main():
     parser = argparse.ArgumentParser(description="Web Content Scraper (Ponytail Streamlined)")
     parser.add_argument("--urls", "-u", required=True, help="Path ke file daftar URL")
     parser.add_argument("--output", "-o", required=True, help="Path output file/folder hasil scrapping")
-    parser.add_argument("--output-mode", choices=["each", "merge"], default="merge", help="Mode output ('each' atau 'merge'). Default: merge")
+    parser.add_argument("--output-mode", choices=["each", "merge"], default="each", help="Mode output ('each' atau 'merge'). Default: each")
     parser.add_argument("--css-path", default="body", help="Default CSS selector. Default: 'body'")
     parser.add_argument("--css-paths", default=None, help="Path ke file CSV pemetaan CSS selector")
     parser.add_argument("--engine", choices=["playwright", "selenium"], default="playwright", help="Engine scraping. Default: playwright")

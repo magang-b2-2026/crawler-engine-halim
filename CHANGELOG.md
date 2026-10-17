@@ -125,3 +125,43 @@ Pada pengujian Skenario 2 (*Hilirisasi Nikel dan Tambang*), ditemukan bahwa 4 da
 3. **Penyempurnaan QA Suite:**
    * Menambahkan `test_nextjs_and_script_noise_suppressed`, `test_unwrapped_html_fragment_safe`, dan `test_truncation_and_unhydrated_spa_detection` pada [`Scrapper/test_qa_suite.py`](file:///e:/Coding/Coding/KOMDIGI/Crawler%20Mas%20Anjas/Scrapper/test_qa_suite.py). Total pengujian meningkat dari 17 menjadi 20 pengujian otomatis (100% lolos).
 
+---
+
+## 7. Pembaruan v3.1: CPT Text Sanitizer, 1-Article-1-File Export & Windows UTF-8 Guard
+
+**Tanggal Pembaruan:** 17 Oktober 2026  
+**Status QA:** ✅ 27/27 Unit & Regression Tests Passed (0.64s)
+
+### A. Latar Belakang & Kebutuhan Training LLM / CPT
+Dataset Continual Pre-Training (CPT) membutuhkan korpus teks berbahasa Indonesia berkonsistensi tinggi dengan tokenisasi deterministik. Variasi karakter Unicode non-standar (seperti *curly quotes*, *em-dash*, spasi nir-lebar, dan kebocoran dateline jurnalistik) berisiko memecah representasi subword tokenizer serta mendegradasi kemampuan generasi teks LLM.
+
+### B. Fitur & Peningkatan Utama (v3.1):
+
+1. **CPT Text Sanitizer Terpadu (`sanitize_cpt_text`):**
+   * **Normalisasi Tanda Petik:** Seluruh variasi typographic/curly quotes (`“`, `”`, `«`, `»`, `„`, `″`) diseragamkan menjadi ASCII 34 murni (`"`).
+   * **Normalisasi Apostrof & Petik Tunggal:** Variasi (`‘`, `’`, `‚`, `′`) dinormalkan menjadi ASCII 39 murni (`'`).
+   * **Normalisasi Tanda Pisah (Dash):** En-dash dan em-dash (`–`, `—`) dikonversi kontekstual: rentang angka (misal `2024–2026` $\to$ `2024-2026`) dan jeda klausa (`kalimat — lanjutan` $\to$ `kalimat - lanjutan`).
+   * **Pembersihan Spasi Nir-Lebar:** Membasmi `\u00a0` (NBSP), `\u200b` (ZWSP), `\ufeff` (BOM), dan `\u00ad` (soft-hyphen) dengan isolasi spasi regex agar kata tidak menyatu (*word-fusing prevention*).
+   * **Eliminasi Dateline Berita:** Memotong kepala berita jurnalistik (misal: `JAKARTA, KOMPAS.com - `, `**UNAIR NEWS - **`, `VIVA – `) sehingga teks artikel langsung diawali subjek informasi.
+   * **Pembersihan Noise & Signature Redaksi:** Membuang frasa navigasi (*"Baca juga: ..."*, *"Simak Video Berikut ..."*), instruksi medsos (*"Follow WhatsApp Channel ..."*), atribusi redaksi (*"Penulis/Editor: ..."*), dan inisial wartawan (*"(kcm/ard)"*).
+
+2. **Ekspor 1 Artikel = 1 File Markdown (`--output-mode each`):**
+   * Setiap artikel yang lolos kurasi otomatis disimpan sebagai berkas tersendiri dengan penamaan deterministik:
+     `dataset_name/article_{idx:03d}_{domain}_{title_slug}.md`
+   * Menyediakan parameter CLI `--output-mode {each, merge, both}` dengan default `each`.
+   * Berkas gabungan tetap didukung untuk audit cepat atau konsumsi berkas tunggal (`merge`).
+
+3. **Google News RSS Direct Publisher URL Decoding:**
+   * Modul RSS Harvester (`Scrapper/google_news_crawler.py`) dilengkapi parser token base64 Google News redirect (`news.google.com/rss/articles/...`) untuk langsung mengurai URL penerbit asli (*direct publisher URL*).
+   * Mendukung query exclusion Google Search (misal: `-site:komdigi.go.id`) guna mencegah bias dominasi domain institusi resmi saat scraping topik umum.
+
+4. **Deteksi Otomatis Lingkungan Python & Windows UTF-8 Guard:**
+   * Seluruh entrypoint CLI secara cerdas mendeteksi bila dijalankan dari shell Windows tanpa aktivasi virtualenv (`C:\Python314\python.exe`) dan otomatis me-respawn menggunakan interpreter virtual environment stabil (`..\.venv\Scripts\python.exe`).
+   * Mengonfigurasi `sys.stdout.reconfigure(encoding="utf-8", errors="replace")` untuk mencegah crash `UnicodeEncodeError` (charmap cp1252) pada Windows PowerShell/CMD.
+
+5. **Pengujian & Validasi Skala Besar (100 Artikel):**
+   * **Topik Uji:** *"Kecerdasan Buatan"* (100 URL, batas waktu 7 hari).
+   * **Hasil:** 97 artikel sukses terekstrak bersih (50.342 kata, rata-rata 519 kata/artikel), 1 duplikat tereliminasi, 2 error HTTP 403 WAF terfilter otomatis.
+   * **Total Durasi:** 68.85 detik (~1.41 artikel/detik).
+
+

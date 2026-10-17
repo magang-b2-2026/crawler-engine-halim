@@ -19,15 +19,29 @@ import os
 import re
 import sys
 import time
+
+# Auto-switch to project .venv python if executed under an unactivated/incompatible python (e.g. Python 3.14)
+venv_py = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".venv", "Scripts", "python.exe"))
+if os.path.isfile(venv_py) and os.path.abspath(sys.executable).lower() != venv_py.lower() and not os.environ.get("_CRAWLER_VENV_ACTIVE"):
+    os.environ["_CRAWLER_VENV_ACTIVE"] = "1"
+    import subprocess
+    sys.exit(subprocess.call([venv_py] + sys.argv))
+
+import httpx
 import urllib.parse
+import unicodedata
 import xml.etree.ElementTree as ET
 from datetime import datetime
 from typing import Dict, List, Optional, Set, Tuple
 from urllib.parse import urlparse
 
-import httpx
-import trafilatura
-from markdownify import markdownify as md
+# Windows UTF-8 console output guard (cegah charmap cp1252 crash pada karakter internasional)
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
 
 
 # ==============================================================================
@@ -82,30 +96,128 @@ def get_css_selector_for_url(
 # 2. QUALITY GATEKEEPER & MARKDOWN CONVERTER
 # ==============================================================================
 
+def sanitize_cpt_text(text: str, title: str = "") -> str:
+    """Normalisasi tipografi, pembersihan invisible space, tanda petik ASCII, dan derau berita untuk training LLM."""
+    if not text or not text.strip():
+        return ""
+
+    # 1. Normalisasi bentuk kanonikal Unicode (NFKC)
+    text = unicodedata.normalize("NFKC", text)
+
+    # 2. Pembersihan invisible spaces, zero-width characters, dan soft-hyphens
+    text = text.replace("\u00a0", " ")   # Non-breaking space (&nbsp;)
+    text = text.replace("\u200b", " ")   # Zero-width space (cegah kata menempel)
+    text = text.replace("\u200c", "")    # Zero-width non-joiner
+    text = text.replace("\u200d", "")    # Zero-width joiner
+    text = text.replace("\ufeff", " ")   # Byte order mark (BOM)
+    text = text.replace("\u00ad", "")    # Soft hyphen (suku kata bersatu kembali)
+    text = text.replace("\u200e", "")    # LTR mark
+    text = text.replace("\u200f", "")    # RTL mark
+    for sp in ("\u2009", "\u202f", "\u2007", "\u2008", "\u3000"):
+        text = text.replace(sp, " ")
+
+    # 3. Normalisasi tanda petik ganda tipografi ke ASCII 34 (")
+    for q in ("“", "”", "«", "»", "„", "″", "❝", "❞", "『", "』", "﹁", "﹂"):
+        text = text.replace(q, '"')
+
+    # 4. Normalisasi tanda petik tunggal tipografi & apostrof ke ASCII 39 (')
+    for q in ("‘", "’", "‚", "′", "❛", "❜", "ʻ", "ʼ", "ʹ", "ʽ"):
+        text = text.replace(q, "'")
+
+    # 5. Normalisasi dash & hyphen
+    text = re.sub(r"(\d+)\s*[–—―‒]\s*(\d+)", r"\1-\2", text)
+    text = re.sub(r"\s*[–—―‒]+\s*", " - ", text)
+    text = text.replace("…", "...")
+
+    # 6. Pembersihan tag embed dan derau multimedia
+    text = re.sub(r"\[gambas:[^\]]+\]", "", text, flags=re.I)
+
+    # 7. Pembersihan baris demi baris (Baca juga, Simak video, Footer redaksi, CTA sosial media)
+    clean_lines = []
+    for line in text.splitlines():
+        line_str = line.strip()
+        if not line_str:
+            clean_lines.append("")
+            continue
+
+        if line_str.startswith("#"):
+            clean_lines.append(line_str)
+            continue
+
+        if re.match(r"^(?:\*\*|__)?\s*(?:baca\s+juga|simak\s+juga|simak\s+video|pilihan\s+editor|artikel\s+ini\s+telah\s+tayang|tonton\s+video|lihat\s+juga|lire\s+l'article\s+complet|read\s+more|baca\s+selengkapnya)\s*:?", line_str, re.I):
+            continue
+
+        if re.match(r"^(?:\*\*|__)?\s*(?:dapatkan\s+update\s+berita|ikuti\s+saluran\s+whatsapp|simak\s+berita\s+terbaru\s+di|download\s+aplikasi|klik\s+di\s+sini\s+untuk\s+berlangganan|bergabunglah\s+dengan\s+saluran)", line_str, re.I):
+            continue
+
+        if re.match(r"^(?:penulis|reporter|editor|kontributor|redaktur|alih\s+bahasa)\s*:\s*[^\n]+$", line_str, re.I):
+            continue
+
+        clean_lines.append(line_str)
+
+    text = "\n".join(clean_lines)
+
+    # 8. Pembersihan inisial redaksi di akhir teks (misal: (kcm/ard), (dna/dna), (ant/red))
+    text = re.sub(r"\s*\(\s*[a-zA-Z0-9]{2,5}\s*/\s*[a-zA-Z0-9]{2,5}\s*\)\s*$", "", text.strip(), flags=re.I)
+    text = re.sub(r"\s*\(\s*(?:ant|red|tim)\s*\)\s*$", "", text.strip(), flags=re.I)
+
+    # 9. Pembersihan dateline pembuka jurnalistik (hanya di paragraf konten pembuka, termasuk yang berformat bold/italic)
+    lines = text.splitlines()
+    new_lines = []
+    dateline_checked = False
+    for line in lines:
+        stripped = line.strip()
+        if not dateline_checked and stripped and not stripped.startswith("#") and not stripped.startswith(">"):
+            cleaned_line = re.sub(
+                r"^(?:\*\*|__)?\s*[A-Z][a-zA-Z\s]{1,25}(?:,\s*[A-Za-z0-9\.\s\-]+)?(?:\s*\([A-Za-z0-9\s/]+\))?\s*[-–—]{1,2}\s*(?:\*\*|__)?\s*",
+                "",
+                stripped
+            )
+            dateline_checked = True
+            if cleaned_line:
+                new_lines.append(cleaned_line)
+            continue
+        new_lines.append(line)
+    text = "\n".join(new_lines)
+
+    # 10. Rasionalisasi spasi dan baris kosong
+    text = re.sub(r"[ \t]{2,}", " ", text)
+    text = re.sub(r"\n{3,}", "\n\n", text)
+
+    return text.strip()
+
+
 def convert_html_to_markdown(html_content: str, url: str = "", title: str = "") -> str:
-    """Konversi HTML ke Markdown bersih untuk dataset CPT via Trafilatura / Markdownify."""
+    """Konversi HTML ke Markdown bersih untuk dataset CPT via Trafilatura / Markdownify, disanitasi untuk training LLM."""
     if not html_content or not html_content.strip():
         return ""
 
     raw = html_content if ("<html" in html_content[:300].lower() or "<body" in html_content[:300].lower()) else f"<!DOCTYPE html><html><body>{html_content}</body></html>"
+    raw_md = ""
     try:
+        import trafilatura
         ext = trafilatura.extract(raw, output_format="markdown", include_tables=True, include_links=False, favor_precision=True)
         if ext and len(ext.split()) >= 15:
-            return ext.strip()
+            raw_md = ext.strip()
     except Exception:
         pass
 
-    try:
-        sanitized = re.sub(r"<(script|style|noscript)[^>]*>.*?</\1>", "", html_content, flags=re.I | re.S)
-        res = md(sanitized, heading_style="ATX", strip=["nav", "footer", "aside", "iframe", "form"])
-        res = re.sub(r"\n{3,}", "\n\n", res).strip()
-        if res and len(res.split()) >= 15:
-            return res
-    except Exception:
-        pass
+    if not raw_md:
+        try:
+            from markdownify import markdownify as md
+            sanitized = re.sub(r"<(script|style|noscript)[^>]*>.*?</\1>", "", html_content, flags=re.I | re.S)
+            res = md(sanitized, heading_style="ATX", strip=["nav", "footer", "aside", "iframe", "form"])
+            res = re.sub(r"\n{3,}", "\n\n", res).strip()
+            if res and len(res.split()) >= 15:
+                raw_md = res
+        except Exception:
+            pass
 
-    clean_strip = re.sub(r"<(script|style|noscript)[^>]*>.*?</\1>", "", html_content, flags=re.I | re.S)
-    return re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", clean_strip)).strip()
+    if not raw_md:
+        clean_strip = re.sub(r"<(script|style|noscript)[^>]*>.*?</\1>", "", html_content, flags=re.I | re.S)
+        raw_md = re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", clean_strip)).strip()
+
+    return sanitize_cpt_text(raw_md, title=title)
 
 
 BLOCK_PHRASES = (
@@ -313,103 +425,110 @@ class HybridAsyncCrawler:
         pub_date = article.get("pub_date", "")
 
         async with self.semaphore:
-            # ---------------- TIER 1: FAST-PATH ----------------
-            t0 = time.time()
-            tier1_res = await self._fetch_tier1_fastpath(client, target_url)
-            if tier1_res:
-                final_url, md_text, p_title = tier1_res
-                elapsed_ms = (time.time() - t0) * 1000
-                words = len(md_text.split())
-                print(f"[{idx}/{total}] [TIER 1 - FAST PATH] ({elapsed_ms:.0f}ms | {words} kata) [{source}] {target_url[:75]}...")
-                return {
-                    "url": final_url, "raw_url": raw_url, "title": p_title or title, "source": source,
-                    "pub_date": pub_date, "tier": "TIER1_FAST_PATH", "content": md_text, "word_count": words, "status": "SUCCESS",
-                }
-
-            # ---------------- TIER 2: PLAYWRIGHT FALLBACK ----------------
-            t0 = time.time()
-            final_url = target_url
-            md_text = ""
-            status = "SUCCESS"
-            page_title = title
-            context = None
-            page = None
-
             try:
-                context = await playwright_browser.new_context(
-                    user_agent=self.http_headers["User-Agent"], viewport={"width": 1920, "height": 1080}, ignore_https_errors=True
-                )
-                await context.add_init_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined});")
-                page = await context.new_page()
+                # ---------------- TIER 1: FAST-PATH ----------------
+                t0 = time.time()
+                tier1_res = await self._fetch_tier1_fastpath(client, target_url)
+                if tier1_res:
+                    final_url, md_text, p_title = tier1_res
+                    elapsed_ms = (time.time() - t0) * 1000
+                    words = len(md_text.split())
+                    print(f"[{idx}/{total}] [TIER 1 - FAST PATH] ({elapsed_ms:.0f}ms | {words} kata) [{source}] {target_url[:75]}...")
+                    return {
+                        "url": final_url, "raw_url": raw_url, "title": p_title or title, "source": source,
+                        "pub_date": pub_date, "tier": "TIER1_FAST_PATH", "content": md_text, "word_count": words, "status": "SUCCESS",
+                    }
 
-                await page.goto(target_url, wait_until="domcontentloaded", timeout=self.timeout * 1000)
+                # ---------------- TIER 2: PLAYWRIGHT FALLBACK ----------------
+                t0 = time.time()
+                final_url = target_url
+                md_text = ""
+                status = "SUCCESS"
+                page_title = title
+                context = None
+                page = None
 
-                if "google.com" in target_url:
+                try:
+                    context = await playwright_browser.new_context(
+                        user_agent=self.http_headers["User-Agent"], viewport={"width": 1920, "height": 1080}, ignore_https_errors=True
+                    )
+                    await context.add_init_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined});")
+                    page = await context.new_page()
+
+                    await page.goto(target_url, wait_until="domcontentloaded", timeout=self.timeout * 1000)
+
+                    if "google.com" in target_url:
+                        try:
+                            await page.wait_for_url(lambda u: "google.com" not in u, timeout=5000)
+                        except Exception:
+                            pass
                     try:
-                        await page.wait_for_url(lambda u: "google.com" not in u, timeout=5000)
+                        await page.wait_for_load_state("domcontentloaded", timeout=4000)
                     except Exception:
                         pass
-                try:
-                    await page.wait_for_load_state("domcontentloaded", timeout=4000)
-                except Exception:
-                    pass
 
-                await page.wait_for_timeout(1000)
+                    await page.wait_for_timeout(1000)
 
-                final_url = page.url
-                raw_t = await page.title()
-                if raw_t:
-                    page_title = re.sub(r"\s+", " ", html.unescape(raw_t)).strip()
-
-                css_path, is_def = get_css_selector_for_url(final_url, self.css_paths_map, self.default_css_path, silent=True)
-
-                eval_js = """(css) => {
-                    let el = document.querySelector(css);
-                    if (el) return el.innerHTML;
-                    let nodes = document.querySelectorAll(css);
-                    if (nodes.length > 0) return Array.from(nodes).map(n => n.innerHTML).join('\\n');
-                    let sem = document.querySelector('article, main, .article-content');
-                    return sem ? sem.innerHTML : (document.body ? document.body.innerHTML : '');
-                }"""
-
-                async def _extract_html():
-                    if css_path == "body":
-                        return await page.content()
-                    res = await page.evaluate(eval_js, css_path)
-                    return res if (res and len(res.strip()) >= 100) else await page.content()
-
-                try:
-                    raw_html = await _extract_html()
-                except Exception:
-                    await page.wait_for_timeout(1500)
                     final_url = page.url
-                    raw_html = await _extract_html()
+                    raw_t = await page.title()
+                    if raw_t:
+                        page_title = re.sub(r"\s+", " ", html.unescape(raw_t)).strip()
 
-                md_text = convert_html_to_markdown(raw_html, url=final_url, title=page_title)
-                worthy, reason = is_cpt_worthy_content(final_url, md_text, min_words=self.min_words)
-                status = "SUCCESS" if worthy else f"FILTERED: {reason}"
+                    css_path, is_def = get_css_selector_for_url(final_url, self.css_paths_map, self.default_css_path, silent=True)
 
-                elapsed_ms = (time.time() - t0) * 1000
-                words = len(md_text.split()) if md_text else 0
-                tag = "[TIER 2 - PLAYWRIGHT]" if status == "SUCCESS" else "[QUALITY GATE FILTERED]"
-                print(f"[{idx}/{total}] {tag} ({elapsed_ms:.0f}ms | {words} kata) [{source}] {final_url[:70]}...")
+                    eval_js = """(css) => {
+                        let el = document.querySelector(css);
+                        if (el) return el.innerHTML;
+                        let nodes = document.querySelectorAll(css);
+                        if (nodes.length > 0) return Array.from(nodes).map(n => n.innerHTML).join('\\n');
+                        let sem = document.querySelector('article, main, .article-content');
+                        return sem ? sem.innerHTML : (document.body ? document.body.innerHTML : '');
+                    }"""
 
-            except Exception as e:
-                status = f"ERROR: {e}"
-                print(f"[{idx}/{total}] [CRAWL ERROR] {e} | {target_url[:70]}")
-            finally:
-                if page:
-                    try: await page.close()
-                    except Exception: pass
-                if context:
-                    try: await context.close()
-                    except Exception: pass
+                    async def _extract_html():
+                        if css_path == "body":
+                            return await page.content()
+                        res = await page.evaluate(eval_js, css_path)
+                        return res if (res and len(res.strip()) >= 100) else await page.content()
 
-            return {
-                "url": final_url, "raw_url": raw_url, "title": page_title or title, "source": source,
-                "pub_date": pub_date, "tier": "TIER2_PLAYWRIGHT", "content": md_text if status == "SUCCESS" else "",
-                "word_count": len(md_text.split()) if status == "SUCCESS" else 0, "status": status,
-            }
+                    try:
+                        raw_html = await _extract_html()
+                    except Exception:
+                        await page.wait_for_timeout(1500)
+                        final_url = page.url
+                        raw_html = await _extract_html()
+
+                    md_text = convert_html_to_markdown(raw_html, url=final_url, title=page_title)
+                    worthy, reason = is_cpt_worthy_content(final_url, md_text, min_words=self.min_words)
+                    status = "SUCCESS" if worthy else f"FILTERED: {reason}"
+
+                    elapsed_ms = (time.time() - t0) * 1000
+                    words = len(md_text.split()) if md_text else 0
+                    tag = "[TIER 2 - PLAYWRIGHT]" if status == "SUCCESS" else "[QUALITY GATE FILTERED]"
+                    print(f"[{idx}/{total}] {tag} ({elapsed_ms:.0f}ms | {words} kata) [{source}] {final_url[:70]}...")
+
+                except Exception as e:
+                    status = f"ERROR: {e}"
+                    print(f"[{idx}/{total}] [CRAWL ERROR] {e} | {target_url[:70]}")
+                finally:
+                    if page:
+                        try: await page.close()
+                        except Exception: pass
+                    if context:
+                        try: await context.close()
+                        except Exception: pass
+
+                return {
+                    "url": final_url, "raw_url": raw_url, "title": page_title or title, "source": source,
+                    "pub_date": pub_date, "tier": "TIER2_PLAYWRIGHT", "content": md_text if status == "SUCCESS" else "",
+                    "word_count": len(md_text.split()) if status == "SUCCESS" else 0, "status": status,
+                }
+            except Exception as outer_e:
+                print(f"[{idx}/{total}] [WORKER ERROR] {outer_e} | {target_url[:70]}")
+                return {
+                    "url": target_url, "raw_url": raw_url, "title": title, "source": source,
+                    "pub_date": pub_date, "tier": "ERROR", "content": "", "word_count": 0, "status": f"ERROR: {outer_e}",
+                }
 
     async def crawl_articles(self, articles: List[Dict[str, str]]) -> List[Dict]:
         """Menjalankan crawling asinkron paralel untuk seluruh daftar artikel."""
@@ -422,8 +541,26 @@ class HybridAsyncCrawler:
             async with async_playwright() as p:
                 browser = await p.chromium.launch(headless=self.headless, args=["--disable-blink-features=AutomationControlled", "--no-sandbox"])
                 tasks = [self._crawl_single_article(art, http_client, browser, idx, len(articles)) for idx, art in enumerate(articles, 1)]
-                results = await asyncio.gather(*tasks)
+                raw_results = await asyncio.gather(*tasks, return_exceptions=True)
                 await browser.close()
+
+        results = []
+        for idx, res in enumerate(raw_results, 1):
+            if isinstance(res, Exception):
+                art = articles[idx - 1]
+                results.append({
+                    "url": art.get("decoded_url") or art.get("link", ""),
+                    "raw_url": art.get("link", ""),
+                    "title": art.get("title", ""),
+                    "source": art.get("source", ""),
+                    "pub_date": art.get("pub_date", ""),
+                    "tier": "ERROR",
+                    "content": "",
+                    "word_count": 0,
+                    "status": f"ERROR: {res}",
+                })
+            else:
+                results.append(res)
         return results
 
 
@@ -436,16 +573,30 @@ def export_dataset(
     deduplicator: SemanticDeduplicator,
     output_path: str,
     output_format: str = "all",
+    output_mode: str = "each",
     topic: str = "",
     when: str = "",
     total_time_sec: float = 0.0,
 ):
-    """Menyimpan hasil crawling bersih ke format Markdown, JSONL, dan Audit Log."""
-    out_dir = os.path.dirname(os.path.abspath(output_path)) or "."
-    os.makedirs(out_dir, exist_ok=True)
-    base = os.path.splitext(os.path.basename(output_path))[0]
+    """Menyimpan hasil crawling bersih ke format Markdown (1 artikel 1 file .md atau merged), JSONL, dan Audit Log."""
+    clean_path = output_path.rstrip("/\\")
+    if clean_path.endswith((".md", ".jsonl", ".log", ".txt")):
+        base = os.path.splitext(os.path.basename(clean_path))[0]
+        parent_dir = os.path.dirname(os.path.abspath(clean_path)) or "."
+    else:
+        base = os.path.basename(clean_path)
+        parent_dir = os.path.dirname(os.path.abspath(clean_path)) or "."
 
-    md_file, jsonl_file, log_file = os.path.join(out_dir, f"{base}.md"), os.path.join(out_dir, f"{base}.jsonl"), os.path.join(out_dir, f"{base}.log")
+    # Jika mode 'each' atau 'both', simpan ke subfolder dataset khusus agar rapi
+    if output_mode in ("each", "both"):
+        dataset_dir = os.path.join(parent_dir, base)
+    else:
+        dataset_dir = parent_dir
+    os.makedirs(dataset_dir, exist_ok=True)
+
+    jsonl_file = os.path.join(dataset_dir, f"{base}.jsonl")
+    log_file = os.path.join(dataset_dir, f"{base}.log")
+    merged_md_file = os.path.join(dataset_dir if output_mode in ("each", "both") else parent_dir, f"{base}.md" if output_mode == "merge" else f"{base}_merged.md")
 
     valid_cpt = [r for r in results if r["status"] == "SUCCESS" and r["content"]]
     failed_or_filtered = [r for r in results if r["status"] != "SUCCESS" or not r["content"]]
@@ -463,13 +614,38 @@ def export_dataset(
 
     # 1. Export Markdown
     if output_format in ("md", "all"):
-        docs = []
-        for it in unique_items:
-            body = re.sub(r"^#\s+[^\n]+\n+", "", it["content"].strip()) if it["content"].strip().startswith("# ") else it["content"].strip()
-            docs.append(f"# {it['title']}\n\n> **Sumber:** [{it['source']}]({it['url']})\n> **Tanggal Publikasi:** {it.get('pub_date', '-')}\n> **Jalur Ekstraksi:** `{it['tier']}` | **Jumlah Kata:** {it['word_count']} kata\n\n{body}")
-        with open(md_file, "w", encoding="utf-8") as f:
-            f.write("\n\n---\n\n".join(docs) + "\n")
-        print(f"[OK] Dataset Markdown disimpan ke: {md_file}")
+        # Mode EACH: 1 artikel = 1 file .md terpisah
+        if output_mode in ("each", "both"):
+            for idx, it in enumerate(unique_items, 1):
+                domain = urlparse(it["url"]).netloc.replace("www.", "")
+                domain_slug = re.sub(r"[^\w\-_\.]", "_", domain).strip("_") or "article"
+                title_slug = re.sub(r"[^\w\s-]", "", it.get("title", "")).strip().lower()
+                title_slug = re.sub(r"[-\s]+", "_", title_slug)[:45].strip("_")
+
+                file_name = f"article_{idx:03d}_{domain_slug}_{title_slug}.md" if title_slug else f"article_{idx:03d}_{domain_slug}.md"
+                file_path = os.path.join(dataset_dir, file_name)
+
+                body = re.sub(r"^#\s+[^\n]+\n+", "", it["content"].strip()) if it["content"].strip().startswith("# ") else it["content"].strip()
+                doc = (
+                    f"# {it['title']}\n\n"
+                    f"> **Sumber:** [{it['source']}]({it['url']})\n"
+                    f"> **Tanggal Publikasi:** {it.get('pub_date', '-')}\n"
+                    f"> **Jalur Ekstraksi:** `{it['tier']}` | **Jumlah Kata:** {it['word_count']} kata\n\n"
+                    f"{body}\n"
+                )
+                with open(file_path, "w", encoding="utf-8") as f:
+                    f.write(doc)
+            print(f"[OK] {len(unique_items)} file artikel Markdown (1 artikel 1 file .md) disimpan di: {os.path.abspath(dataset_dir)}")
+
+        # Mode MERGE: gabungkan semua artikel ke satu file .md
+        if output_mode in ("merge", "both"):
+            docs = []
+            for it in unique_items:
+                body = re.sub(r"^#\s+[^\n]+\n+", "", it["content"].strip()) if it["content"].strip().startswith("# ") else it["content"].strip()
+                docs.append(f"# {it['title']}\n\n> **Sumber:** [{it['source']}]({it['url']})\n> **Tanggal Publikasi:** {it.get('pub_date', '-')}\n> **Jalur Ekstraksi:** `{it['tier']}` | **Jumlah Kata:** {it['word_count']} kata\n\n{body}")
+            with open(merged_md_file, "w", encoding="utf-8") as f:
+                f.write("\n\n---\n\n".join(docs) + "\n")
+            print(f"[OK] Dataset Markdown gabungan disimpan ke: {os.path.abspath(merged_md_file)}")
 
     # 2. Export JSONL
     if output_format in ("jsonl", "all"):
@@ -536,8 +712,9 @@ def main():
 
     parser.add_argument("-w", "--when", default="7d", help="Filter waktu kebaruan (1d, 7d, 30d). Default: 7d")
     parser.add_argument("-l", "--limit", type=int, default=30, help="Batas artikel. Default: 30")
-    parser.add_argument("-o", "--output", default="Scrapper/output/dataset_cpt.md", help="Path output dataset")
+    parser.add_argument("-o", "--output", default="Scrapper/output/dataset_cpt", help="Path/nama output dataset. Default: Scrapper/output/dataset_cpt")
     parser.add_argument("-f", "--format", choices=["md", "jsonl", "all"], default="all", help="Format output. Default: all")
+    parser.add_argument("--output-mode", choices=["each", "merge", "both"], default="each", help="Mode output Markdown: 'each' (1 file .md per artikel), 'merge', atau 'both'. Default: each")
     parser.add_argument("-c", "--concurrency", type=int, default=8, help="Batas paralel worker. Default: 8")
     parser.add_argument("-s", "--sim-threshold", type=float, default=0.80, help="Ambang batas kemiripan (0.0-1.0). Default: 0.80")
     parser.add_argument("--css-paths", default="Scrapper/sample_css_paths.csv", help="Path CSV mapping CSS selector")
@@ -573,7 +750,10 @@ def main():
     )
     results = asyncio.run(crawler.crawl_articles(articles))
     dedup = SemanticDeduplicator(threshold=args.sim_threshold)
-    export_dataset(results, dedup, args.output, args.format, topic=args.topic or "", when=args.when, total_time_sec=time.time() - start_time)
+    export_dataset(
+        results, dedup, args.output, output_format=args.format, output_mode=args.output_mode,
+        topic=args.topic or "", when=args.when, total_time_sec=time.time() - start_time
+    )
 
 
 if __name__ == "__main__":
