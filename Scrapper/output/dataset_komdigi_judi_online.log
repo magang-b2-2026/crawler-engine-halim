@@ -1,0 +1,12 @@
+=== PIPELINE AUDIT REPORT & QUALITY LOG ===
+Waktu Eksekusi       : 2026-10-16 10:10:02
+Topik Pencarian      : Komdigi Berantas Judi Online
+Filter Waktu Kebaruan: 7d
+Total URL Diproses   : 8
+Total Lolos CPT Bersih: 8 artikel (2,390 kata)
+  - Jalur Tier 1 (Fast-Path) : 8 artikel (100.0%)
+  - Jalur Tier 2 (Playwright): 0 artikel (0.0%)
+Total Duplikat Dieliminasi : 0 artikel (Ambang batas: 80%)
+Total Ditolak Quality Gate : 0 artikel
+Total Durasi Eksekusi: 7.98 detik (1.00 artikel/detik)
+

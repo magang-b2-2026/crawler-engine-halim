@@ -1,0 +1,9 @@
+=== SCRAPING QUALITY LOG & REJECTION REPORT (2026-10-15 14:56:47) ===
+Total URL Diproses : 2
+Total Lolos CPT    : 1
+Total Ditolak/Gagal: 1
+
+- URL Target: https://www.speedtest.net/id
+  URL Input : https://www.google.com/goto?url=CAESVwHrOzAV_rMNnD_rS39XFM5O-WfXaRWvnvb5Ig3iyo309uFxQmiiuHjU_qgke809raw3WTq06AHXlTZQv0sRfnFBT1fQAeo0B1XcRLXnJj8JdbuEza2L7A
+  Alasan    : FILTERED: Teks terlalu pendek (2 kata < batas minimal 25 kata)
+

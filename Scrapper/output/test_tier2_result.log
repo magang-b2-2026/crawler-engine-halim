@@ -1,0 +1,12 @@
+=== PIPELINE AUDIT REPORT & QUALITY LOG ===
+Waktu Eksekusi       : 2026-10-16 10:11:39
+Topik Pencarian      : Direct URLs
+Filter Waktu Kebaruan: 7d
+Total URL Diproses   : 1
+Total Lolos CPT Bersih: 1 artikel (551 kata)
+  - Jalur Tier 1 (Fast-Path) : 0 artikel (0.0%)
+  - Jalur Tier 2 (Playwright): 1 artikel (100.0%)
+Total Duplikat Dieliminasi : 0 artikel (Ambang batas: 80%)
+Total Ditolak Quality Gate : 0 artikel
+Total Durasi Eksekusi: 8.96 detik (0.11 artikel/detik)
+

@@ -1,0 +1,38 @@
+# Biaya Internet Rumah Mahal, Komdigi Mau Pangkas Jadi Rp 100 Ribu
+
+> **Sumber:** [Custom URL](https://inet.detik.com/law-and-policy/d-8706506/biaya-internet-rumah-mahal-komdigi-mau-pangkas-jadi-rp-100-ribu)
+> **Jalur Ekstraksi:** `TIER2_PLAYWRIGHT` | **Jumlah Kata:** 551 kata
+
+Kementerian Komunikasi dan Digital (Komdigi) tengah mengkaji untuk menekan tarif layanan internet tetap atau fixed broadband lebih terjangkau dengan menargetkan biaya berlangganan internet berkecepatan 100 Mbps hanya Rp 100 ribu per bulan.
+
+Langkah tersebut untuk meningkatkan perluasan jaringan internet tetap yang saat ini penetrasinya di Indonesia terbilang masih rendah, yakni mencapai sekitar 22%. Sekaligus cara meningkatkan kualitas akses internet cepat ke masyarakat yang masih dihadapi biaya relatif mahal.
+
+Pemerintah berharap angka tersebut dapat meningkat hingga sekitar 50% sehingga masyarakat memiliki lebih banyak pilihan layanan internet dengan harga terjangkau.
+
+"Jadi kita ingin ongkosnya juga semakin rendah dengan memperkuat fixed broadband, bukan cuma mobile broadband. Sekarang fixed broadband kita penetrasinya kurang lebih 22 persen dari total konektivitas yang ada," ujar Wakil Menteri Komunikasi dan Digital (Wamenkomdigi) Nezar Patria dikutip dari siaran pers, Rabu (14/10/2026).
+
+Komdigi menargetkan layanan internet berkecepatan 100 Mbps dapat dinikmati dengan biaya berlangganan sekitar Rp100 ribu per bulan. Target ini menjadi bagian dari upaya pemerintah meningkatkan keterjangkauan internet, terutama bagi masyarakat yang selama ini harus mengeluarkan biaya relatif besar untuk mendapatkan koneksi berkualitas.
+
+Nezar menilai, biaya internet di Indonesia masih perlu ditekan jika dibandingkan dengan kemampuan ekonomi masyarakat. Dengan pendapatan per kapita Indonesia yang mendekati USD 5.000, biaya berlangganan internet rumah tangga idealnya berada di kisaran Rp200 ribu per bulan.
+
+Namun, biaya berlangganan yang saat ini masih sekitar Rp300 ribu dinilai menunjukkan adanya ruang untuk meningkatkan efisiensi dan memperluas infrastruktur jaringan.
+
+"Jadi kita punya target untuk 100 Mbps paling tidak bisa bayar cuma Rp100 ribu karena saat ini ongkos untuk langganan internet di Indonesia itu menurut data dari ITU itu masih tinggi," jelasnya.
+
+Perluasan fixed broadband tidak hanya ditujukan untuk menurunkan harga, tetapi juga meningkatkan pilihan akses internet bagi masyarakat. Dengan semakin luasnya jaringan internet tetap, masyarakat diharapkan memiliki alternatif koneksi selain internet seluler, khususnya di kawasan dengan kepadatan penduduk tinggi dan biaya konektivitas yang masih mahal.
+
+Di sisi lain, pemerintah juga berupaya mengatasi kesenjangan akses internet di wilayah yang belum terjangkau jaringan telekomunikasi secara memadai.
+
+Nezar menyebut cakupan jaringan 4G saat ini telah mencapai sekitar 97% wilayah berpenghuni. Meski demikian, masih ada sejumlah kawasan dengan populasi relatif kecil yang belum mendapatkan akses infrastruktur telekomunikasi.
+
+Untuk mengatasi persoalan tersebut, pemerintah memasukkan kewajiban pembangunan jaringan di wilayah yang membutuhkan konektivitas ke dalam kebijakan lelang spektrum frekuensi. Dengan demikian, operator yang memenangkan lelang tidak hanya diharapkan meningkatkan kapasitas jaringan di kawasan yang sudah terlayani, tetapi juga memperluas akses ke daerah yang masih tertinggal.
+
+"Kita mewajibkan semua pemenang-pemenang spektrum untuk pembangunan koneksi 4G maupun 5G untuk memperhatikan daerah-daerah ini," ungkap Nezar.
+
+Selain memperluas jaringan 4G dan internet tetap, Komdigi turut mendorong percepatan pengembangan jaringan 5G. Nezar menyebut penetrasi 5G di Indonesia masih berada di kisaran 8,5%, sehingga pengembangannya perlu ditingkatkan untuk memenuhi kebutuhan konektivitas dan mendukung pemanfaatan teknologi digital.
+
+"Kita menginginkan itu bisa ditingkatkan dan juga untuk memperkuat konektivitas di daerah-daerah yang populasinya padat tetapi ongkosnya masih mahal," katanya.
+
+Nezar menegaskan, perluasan internet tetap dan pengembangan jaringan seluler harus berjalan beriringan. Pemerataan konektivitas, menurutnya, bukan hanya soal seberapa luas wilayah yang terjangkau jaringan, melainkan juga kualitas layanan dan kemampuan masyarakat membayar biaya berlangganan.
+
+"Kita berharap ini bisa ditingkatkan sampai sekitar 50-an persen, sehingga dengan fixed broadband kita bisa mendapatkan keuntungan aksesibilitas yang lebih luas, termasuk di sini untuk memenuhi inklusivitas, sehingga semua elemen masyarakat bisa menikmati dan mengakses jaringan ini dengan murah," pungkasnya.

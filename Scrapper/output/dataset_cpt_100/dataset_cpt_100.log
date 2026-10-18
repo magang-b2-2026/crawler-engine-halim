@@ -1,0 +1,20 @@
+=== PIPELINE AUDIT REPORT & QUALITY LOG ===
+Waktu Eksekusi       : 2026-10-17 18:19:06
+Topik Pencarian      : Kecerdasan Buatan
+Total URL Diproses   : 100
+Total Lolos CPT Bersih: 97 artikel (50,342 kata)
+  - Jalur Tier 1 (Fast-Path) : 93 artikel
+  - Jalur Tier 2 (Playwright): 4 artikel
+Total Duplikat Dieliminasi : 1 artikel
+Total Ditolak Quality Gate : 2 artikel
+Total Durasi Eksekusi: 68.85 detik
+
+--- DAFTAR ARTIKEL DUPLIKAT (DIELIMINASI) ---
+• [Kementerian Agama] https://kemenag.go.id/opini/paradoks-ai-antara-konsumsi-energi-digital-keberlanjutan-teknologi-dan-tanggung-jawab-ekologis-p97Lj -> [Kementerian Agama] (89.2%)
+
+--- DAFTAR ARTIKEL DITOLAK / GAGAL ---
+• https://dukcapil.kemendagri.go.id/blog/read/menjamin-bansos-tepat-sasaran-lewat-penguatan-sistem-it-dan-teknologi-ai: ERROR: Page.goto: Timeout 15000ms exceeded.
+Call log:
+  - navigating to "https://dukcapil.kemendagri.go.id/blog/read/menjamin-bansos-tepat-sasaran-lewat-penguatan-sistem-it-dan-teknologi-ai", waiting until "domcontentloaded"
+
+• https://www.megasyariah.co.id/id/artikel/edukasi-tips/lainnya/deepfake-ai: FILTERED: Teks terlalu pendek (16 kata < batas minimal 25 kata)

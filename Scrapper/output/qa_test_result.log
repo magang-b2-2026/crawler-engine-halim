@@ -1,0 +1,9 @@
+=== SCRAPING QUALITY LOG & REJECTION REPORT (2026-10-15 17:32:29) ===
+Total URL Diproses : 3
+Total Lolos CPT    : 2
+Total Ditolak/Gagal: 1
+
+- URL Target: https://www.inilah.com/cyber-media-guidelines
+  URL Input : https://www.inilah.com/cyber-media-guidelines
+  Alasan    : FILTERED: Teks terlalu pendek (10 kata < batas minimal 25 kata)
+

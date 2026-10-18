@@ -1,0 +1,14 @@
+=== PIPELINE AUDIT REPORT & QUALITY LOG ===
+Waktu Eksekusi       : 2026-10-18 17:48:53
+Topik Pencarian      : Direct URLs
+Total URL Diproses   : 1
+Total Lolos CPT Bersih: 0 artikel (0 kata)
+  - Jalur Tier 1 (Fast-Path) : 0 artikel
+  - Jalur Tier 2 (Playwright): 0 artikel
+Total Duplikat Dieliminasi : 0 artikel
+Total Ditolak Quality Gate : 1 artikel
+Total Durasi Eksekusi: 17.78 detik
+
+
+--- DAFTAR ARTIKEL DITOLAK / GAGAL ---
+• https://unair.ac.id/dosen-ftmm-unair-jelaskan-dampak-penggunaan-ai-dan-chat-gpt-dalam-pendidikan/: FILTERED: Teks terlalu pendek (17 kata < batas minimal 25 kata)

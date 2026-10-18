@@ -1,0 +1,23 @@
+# Waspadalah terhadap penipuan canggih yang menggabungkan kecerdasan buatan dan media sosial.
+
+> **Sumber:** [Vietnam.vn](https://www.vietnam.vn/id/canh-giac-voi-nhung-thu-doan-lua-dao-tinh-vi-ket-hop-tri-tue-nhan-tao-va-mang-xa-hoi)
+> **Tanggal Publikasi:** Wed, 14 Oct 2026 16:43:35 GMT
+> **Jalur Ekstraksi:** `TIER1_FAST_PATH` | **Jumlah Kata:** 549 kata
+
+Alat AI saat ini dapat menghasilkan artikel, gambar, suara, atau video palsu berkualitas tinggi. Namun, faktor yang memungkinkan berita palsu dan penipuan menyebar dengan kecepatan luar biasa adalah algoritma rekomendasi konten platform media sosial. Algoritma ini dirancang untuk mempertahankan pengguna dengan memprioritaskan konten yang sesuai dengan riwayat pencarian dan minat mereka, tanpa disadari menciptakan "ruang gema informasi". Penipu mengeksploitasi mekanisme ini dengan menggunakan AI untuk membuat sejumlah besar konten palsu, dikombinasikan dengan jaringan akun palsu untuk berinteraksi, mengelabui algoritma, dan memungkinkan informasi yang salah menjangkau sejumlah besar pengguna.
+
+# Waspadalah terhadap penipuan canggih yang menggabungkan kecerdasan buatan dan media sosial.
+
+Dengan perkembangan teknologi yang pesat, pelaku kejahatan memanfaatkan kecerdasan buatan (AI) yang dikombinasikan dengan algoritma media sosial untuk menciptakan penipuan canggih, yang dipersonalisasi untuk berbagai kelompok sasaran, sehingga mengharuskan warga untuk meningkatkan kewaspadaan dan kemampuan verifikasi informasi mereka.
+
+Pada kenyataannya, skenario penipuan umum biasanya berlangsung dalam empat langkah yang rumit. Pertama, AI menghasilkan konten yang sangat realistis, seperti video deepfake selebriti yang mempromosikan investasi atau pengumuman palsu dari lembaga pemerintah. Selanjutnya, sejumlah besar akun palsu secara bersamaan berkomentar dengan frasa seperti "Saya sudah menerima uangnya," atau "Investasi ini benar-benar menguntungkan," menciptakan rasa percaya palsu. Setelah algoritma mencatat sejumlah besar interaksi, konten tersebut dipromosikan secara luas kepada orang-orang dengan minat yang serupa. Terakhir, korban dipancing ke situs web palsu, grup pribadi, atau aplikasi perpesanan untuk dicuri asetnya dengan meminta transfer uang, investasi, kode OTP, atau informasi bank.
+
+Yang perlu diperhatikan, berita palsu tidak lagi disebarkan secara sembarangan tetapi sekarang "dipersonalisasi" oleh AI, menargetkan kelompok-kelompok tertentu. Lansia sering menjadi sasaran informasi tentang obat-obatan dan subsidi; kaum muda mudah disesatkan oleh iklan pekerjaan online dan investasi keuangan; sementara bisnis menjadi sasaran informasi palsu tentang pajak atau faktur elektronik. Untuk mengidentifikasi berita palsu, orang perlu waspada terhadap konten sensasional, hal-hal yang menciptakan rasa urgensi, video yang tidak biasa, akun yang baru dibuat dengan keterlibatan yang besar, atau tautan yang dipersingkat. Selain itu, jumlah suka atau bagikan tidak dapat dianggap sebagai bukti yang dapat diandalkan tentang keakuratan informasi tersebut.
+
+Secara hukum, undang-undang yang berlaku saat ini sudah memiliki peraturan ketat untuk menangani penyebaran informasi palsu dan penyalahgunaan informasi palsu untuk tujuan penipuan. Menurut Keputusan No. 174/2026/ND-CP, individu dan organisasi yang menggunakan jejaring sosial untuk memberikan atau membagikan informasi palsu atau menyesatkan yang menyebabkan kepanikan publik akan dikenakan sanksi administratif dan dipaksa untuk menghapus informasi yang melanggar tersebut. Jika penyebaran informasi palsu tersebut bertujuan untuk merampas harta benda, pelaku dapat dituntut atas tindak pidana penipuan dan penggelapan harta benda berdasarkan Pasal 174 atau tindak pidana penggunaan jaringan komputer, jaringan telekomunikasi, atau sarana elektronik untuk melakukan tindakan penggelapan harta benda berdasarkan Pasal 290 KUHP 2015 (diubah dan ditambah pada tahun 2017), dengan hukuman penjara hingga 20 tahun. Pengguna yang tanpa sengaja membagikan informasi palsu juga dapat menghadapi konsekuensi hukum sebagaimana diatur dalam undang-undang.
+
+Dalam konteks AI yang semakin canggih, keterampilan terpenting bagi setiap pengguna bukanlah hanya kemampuan untuk mengakses informasi, tetapi juga kemampuan untuk memverifikasinya. Algoritma mungkin menentukan konten apa yang muncul di umpan berita, tetapi mempercayai, berbagi, atau berhenti untuk memverifikasi sepenuhnya merupakan pilihan pribadi. Sebelum mengklik tombol bagikan atau melakukan transaksi online, orang perlu secara proaktif memeriksa informasi dari sumber resmi seperti portal elektronik lembaga pemerintah dan organisasi berita berlisensi untuk melindungi diri mereka dari jebakan teknologi tinggi.
+
+Van Viet 06
+
+## Komentar (0)

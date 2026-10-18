@@ -8,10 +8,9 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-# Scrapper Outputs & Temporary Test Datasets
-Scrapper/output/*
-!Scrapper/output/hasil_scrapping.md
-!Scrapper/output/hasil_scrapping.log
+# Scrapper Outputs & Datasets
+# (Tracked so team members can inspect benchmark and crawling results)
+# Scrapper/output/*
 Scrapper/qa_test_urls.txt
 Scrapper/smoke_test_urls.txt
 Scrapper/test_tier2_input.txt

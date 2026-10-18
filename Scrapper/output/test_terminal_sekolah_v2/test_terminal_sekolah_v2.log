@@ -1,0 +1,26 @@
+=== PIPELINE AUDIT REPORT & QUALITY LOG ===
+Waktu Eksekusi       : 2026-10-18 23:15:08
+Topik Pencarian      : Sekolah Rakyat
+Total URL Diproses   : 100
+Total Lolos CPT Bersih: 89 artikel (36,478 kata)
+  - Jalur Tier 1 (Fast-Path) : 89 artikel
+  - Jalur Tier 2 (Playwright): 0 artikel
+  - Jalur Tier 3 (komdigi-bot): 0 artikel
+Total Duplikat Dieliminasi : 8 artikel
+Total Ditolak Quality Gate : 3 artikel
+Total Durasi Eksekusi: 29.06 detik
+
+--- DAFTAR ARTIKEL DUPLIKAT (DIELIMINASI) ---
+• [.:: Pemko Medan ::.] https://portal.medan.go.id/galeri-foto/wali-kota-medan-hadiri-open-house-sekolah-rakyat-sambut-kembalinya-hak-belajar-anak__read4601.html -> [.:: Pemko Medan ::.] (98.5%)
+• [ANTARA News] https://m.antaranews.com/amp/berita/5793945/sekolah-rakyat-terintegrasi-76-mimika-saat-ini-membina-58-siswa -> [ANTARA News] (96.4%)
+• [klikbogor.id] https://klikbogor.id/kunjungi-sekolah-rakyat-terintegrasi-6-kota-bogor-dedie-rachim-pesan-siswa-jaga-fasilitas/ -> [Pemerintah Kota Bogor] (92.7%)
+• [ANTARA News] https://bengkulu.antaranews.com/amp/berita/482693/lkbn-antara-raih-4-penghargaan-di-anugerah-jurnalistik-sekolah-rakyat-2026 -> [ANTARA News Bali] (100.0%)
+• [Koran Jakarta ®] https://koran-jakarta.com/2026-10-18/tampung-350-siswa-sekolah-rakyat-bekasi-perkuat-misi-memutus-rantai-kemiskinan/amp -> [ANTARA News Megapolitan] (82.2%)
+• [ANTARA News Yogyakarta] https://jogja.antaranews.com/video/5793849/sekolah-rakyat-bangun-empati-dan-disiplin-siswa -> [ANTARA News] (100.0%)
+• [Koran Jakarta ®] https://koran-jakarta.com/2026-10-18/putus-rantai-kemiskinan-bupati-sumbawa-dorong-optimalisasi-sekolah-rakyat/amp -> [ANTARA News Mataram] (98.5%)
+• [Lampumerahnews] https://www.lampumerahnews.id/2026/10/mensos-apresiasi-karya-siswa-daur-ulang.html -> [Berita Bekasi] (92.0%)
+
+--- DAFTAR ARTIKEL DITOLAK / GAGAL ---
+• https://banyuasinkab.go.id/2026/10/segera-hadir-di-banyuasin-wamensos-minta-pemkab-matangkan-persyaratan-sekolah-rakyat/: FILTERED: Deteksi halaman blokir WAF / Error screen ('performing security verification')
+• https://www.kompas.id/artikel/sekolah-rakyat-di-bekasi-harapan-untuk-keluarga-kurang-mampu?open_from=Section_Terbaru: FILTERED: Deteksi stub paywall / konten berbayar (Schema.org isAccessibleForFree: false)
+• https://www.mpr.go.id/album/eyJpdiI6IlBCblAzUW1iaEdLZzcvekRYVUlxd2c9PSIsInZhbHVlIjoiODlpbjh5U1dJYlBMTFlZOEpOSEVzZz09IiwibWFjIjoiNTM4YjlkZDJiYzg2MWUzNzczZjY0ZTVkM2U5NjhhMzliMGJhMTY3MGM0NWFiMTdiZTQ2M2RjODEzYzg3YTNjYyIsInRhZyI6IiJ9/Hidayat-Nur-Wahid-Terima-Sekolah-Rakyat-Terintegrasi-4-Jakarta: FILTERED: Teks terlalu pendek (15 kata < batas minimal 25 kata)

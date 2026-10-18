@@ -1,0 +1,12 @@
+=== PIPELINE AUDIT REPORT & QUALITY LOG ===
+Waktu Eksekusi       : 2026-10-16 10:10:17
+Topik Pencarian      : site:inilah.com AI
+Filter Waktu Kebaruan: 7d
+Total URL Diproses   : 3
+Total Lolos CPT Bersih: 3 artikel (3,120 kata)
+  - Jalur Tier 1 (Fast-Path) : 3 artikel (100.0%)
+  - Jalur Tier 2 (Playwright): 0 artikel (0.0%)
+Total Duplikat Dieliminasi : 0 artikel (Ambang batas: 80%)
+Total Ditolak Quality Gate : 0 artikel
+Total Durasi Eksekusi: 7.49 detik (0.40 artikel/detik)
+

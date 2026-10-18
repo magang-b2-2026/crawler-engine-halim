@@ -1,0 +1,13 @@
+=== PIPELINE AUDIT REPORT & QUALITY LOG ===
+Waktu Eksekusi       : 2026-10-17 19:26:30
+Topik Pencarian      : Direct URLs
+Total URL Diproses   : 100
+Total Lolos CPT Bersih: 99 artikel (38,174 kata)
+  - Jalur Tier 1 (Fast-Path) : 99 artikel
+  - Jalur Tier 2 (Playwright): 0 artikel
+Total Duplikat Dieliminasi : 1 artikel
+Total Ditolak Quality Gate : 0 artikel
+Total Durasi Eksekusi: 18.81 detik
+
+--- DAFTAR ARTIKEL DUPLIKAT (DIELIMINASI) ---
+• [Custom URL] https://www.antaranews.com/berita/5793217/bi-dki-buka-peluang-bisnis-umkm-lewat-in2motionfest-2026 -> [Custom URL] (100.0%)

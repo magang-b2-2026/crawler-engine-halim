@@ -1,0 +1,15 @@
+=== PIPELINE AUDIT REPORT & QUALITY LOG ===
+Waktu Eksekusi       : 2026-10-18 21:59:54
+Topik Pencarian      : Direct URLs
+Total URL Diproses   : 1
+Total Lolos CPT Bersih: 0 artikel (0 kata)
+  - Jalur Tier 1 (Fast-Path) : 0 artikel
+  - Jalur Tier 2 (Playwright): 0 artikel
+  - Jalur Tier 3 (komdigi-bot): 0 artikel
+Total Duplikat Dieliminasi : 0 artikel
+Total Ditolak Quality Gate : 1 artikel
+Total Durasi Eksekusi: 4.89 detik
+
+
+--- DAFTAR ARTIKEL DITOLAK / GAGAL ---
+• https://ulm.ac.id/id/2026/10/15/ulm-sambut-kunjungan-sekolah-rakyat-terintegrasi-9-banjarbaru-perkuat-sinergi-pendidikan-bagi-generasi-muda/: FILTERED: Deteksi judul halaman proteksi WAF/Bot ('Just a moment...')

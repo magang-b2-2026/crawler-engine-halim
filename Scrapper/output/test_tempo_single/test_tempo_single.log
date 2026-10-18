@@ -1,0 +1,15 @@
+=== PIPELINE AUDIT REPORT & QUALITY LOG ===
+Waktu Eksekusi       : 2026-10-18 23:11:27
+Topik Pencarian      : Direct URLs
+Total URL Diproses   : 1
+Total Lolos CPT Bersih: 0 artikel (0 kata)
+  - Jalur Tier 1 (Fast-Path) : 0 artikel
+  - Jalur Tier 2 (Playwright): 0 artikel
+  - Jalur Tier 3 (komdigi-bot): 0 artikel
+Total Duplikat Dieliminasi : 0 artikel
+Total Ditolak Quality Gate : 1 artikel
+Total Durasi Eksekusi: 5.68 detik
+
+
+--- DAFTAR ARTIKEL DITOLAK / GAGAL ---
+• https://www.tempo.co/politik/bisakah-aturan-baru-mencegah-perundungan-di-sekolah-rakyat-2300212: FILTERED: Deteksi stub paywall / konten berbayar (Schema.org isAccessibleForFree: false)

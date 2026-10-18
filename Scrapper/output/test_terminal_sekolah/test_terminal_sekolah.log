@@ -1,0 +1,23 @@
+=== PIPELINE AUDIT REPORT & QUALITY LOG ===
+Waktu Eksekusi       : 2026-10-18 22:05:44
+Topik Pencarian      : Sekolah Rakyat
+Total URL Diproses   : 100
+Total Lolos CPT Bersih: 92 artikel (35,950 kata)
+  - Jalur Tier 1 (Fast-Path) : 90 artikel
+  - Jalur Tier 2 (Playwright): 2 artikel
+  - Jalur Tier 3 (komdigi-bot): 0 artikel
+Total Duplikat Dieliminasi : 3 artikel
+Total Ditolak Quality Gate : 5 artikel
+Total Durasi Eksekusi: 31.88 detik
+
+--- DAFTAR ARTIKEL DUPLIKAT (DIELIMINASI) ---
+• [.:: Pemko Medan ::.] https://portal.medan.go.id/galeri-foto/wali-kota-medan-hadiri-open-house-sekolah-rakyat-sambut-kembalinya-hak-belajar-anak__read4601.html -> [.:: Pemko Medan ::.] (98.5%)
+• [ANTARA News Banten] https://banten.antaranews.com/berita/393145/bagus-khoirunnas-dapat-penghargaan-di-anugerah-jurnalistik-sekolah-rakyat-2026/?&m=false -> [ANTARA News Bali] (100.0%)
+• [ANTARA News] https://m.antaranews.com/amp/berita/5793945/sekolah-rakyat-terintegrasi-76-mimika-saat-ini-membina-58-siswa -> [ANTARA News] (96.4%)
+
+--- DAFTAR ARTIKEL DITOLAK / GAGAL ---
+• https://www.demokrat.or.id/menko-ahy-sekolah-rakyat-jadi-jalan-memutus-rantai-kemiskinan-di-papua/: FILTERED: Teks terlalu pendek (9 kata < batas minimal 25 kata)
+• https://ulm.ac.id/id/2026/10/15/ulm-sambut-kunjungan-sekolah-rakyat-terintegrasi-9-banjarbaru-perkuat-sinergi-pendidikan-bagi-generasi-muda/: FILTERED: Deteksi judul halaman proteksi WAF/Bot ('Just a moment...')
+• https://banyuasinkab.go.id/2026/10/segera-hadir-di-banyuasin-wamensos-minta-pemkab-matangkan-persyaratan-sekolah-rakyat/: FILTERED: Deteksi judul halaman proteksi WAF/Bot ('Just a moment...')
+• https://www.radenintan.ac.id/kenalkan-aplikasi-ruang-dengar-dosen-uin-ril-berdayakan-konselor-sebaya-di-sekolah-rakyat/: FILTERED: Deteksi judul halaman proteksi WAF/Bot ('Just a moment...')
+• https://www.mpr.go.id/album/eyJpdiI6IlBCblAzUW1iaEdLZzcvekRYVUlxd2c9PSIsInZhbHVlIjoiODlpbjh5U1dJYlBMTFlZOEpOSEVzZz09IiwibWFjIjoiNTM4YjlkZDJiYzg2MWUzNzczZjY0ZTVkM2U5NjhhMzliMGJhMTY3MGM0NWFiMTdiZTQ2M2RjODEzYzg3YTNjYyIsInRhZyI6IiJ9/Hidayat-Nur-Wahid-Terima-Sekolah-Rakyat-Terintegrasi-4-Jakarta: FILTERED: Teks terlalu pendek (15 kata < batas minimal 25 kata)

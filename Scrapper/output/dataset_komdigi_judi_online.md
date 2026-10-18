@@ -1,0 +1,283 @@
+# Jangan Sampai Bikin Bobol! Berantas Konten Judi Online
+
+> **Sumber:** [Indonesia Baik](https://indonesiabaik.id/infografis/jangan-sampai-bikin-bobol-berantas-konten-judi-online)
+> **Tanggal Publikasi:** Tue, 13 Oct 2026 09:05:24 GMT
+> **Jalur Ekstraksi:** `TIER1_FAST_PATH` | **Jumlah Kata:** 157 kata
+
+## **Jangan Sampai Bikin Bobol! Berantas Konten Judi** ***Online***
+
+**indonesiabaik.id —** Kementerian Komunikasi dan Digital (Komdigi) terus melakukan penanganan terhadap konten judi online di ruang digital. Sejak 2018 hingga 6 Oktober 2026, Komdigi telah melakukan pemutusan akses dan take down terhadap 9.050.975 konten judi online.
+
+Penanganan tersebut dilakukan secara bertahap dari tahun ke tahun. Jumlah konten yang ditindak meningkat signifikan dalam beberapa tahun terakhir, dengan angka tertinggi tercatat pada 2024 sebanyak 3.893.963 konten. Sementara itu, pada 2025 terdapat 2.087.109 konten yang ditangani.
+
+Hingga 2026, Komdigi telah melakukan pemutusan akses dan take down terhadap 1.416.039 konten judi online. Angka ini menunjukkan upaya berkelanjutan pemerintah dalam membatasi penyebaran konten judi online di ruang digital.
+
+Masyarakat juga dapat ikut berperan dengan melaporkan konten negatif atau judi online yang ditemukan di internet melalui kanal Aduan Konten. Laporan dapat disampaikan melalui aduankonten.id atau email \[email protected\].
+
+Dengan melaporkan konten yang ditemukan, masyarakat turut membantu menciptakan ruang digital yang lebih aman dan sehat.
+
+---
+
+# Danantara: Optimalisasi Kekayaan Negara untuk Mendorong Pertumbuhan Ekonomi Nasional - beritanasionalupdate.com
+
+> **Sumber:** [beritanasionalupdate.com](https://www.beritanasionalupdate.com/news/details/1911/tni-ad-tegaskan-penegakan-hukum-dalam-pemberantasan-judi-online)
+> **Tanggal Publikasi:** Sun, 11 Oct 2026 01:58:10 GMT
+> **Jalur Ekstraksi:** `TIER1_FAST_PATH` | **Jumlah Kata:** 364 kata
+
+Pemberantasan judi online terus menjadi perhatian pemerintah dan aparat penegak hukum, termasuk dalam memastikan fasilitas negara tidak disalahgunakan untuk kegiatan ilegal. Salah satu langkah penegakan hukum terlihat dari pengungkapan dugaan operasional perjudian daring di Kompleks Perumahan Angkatan Darat (KPAD) Cijantung, Jakarta Timur, pada Minggu, 4 Oktober 2026. Kasus tersebut terungkap setelah warga melaporkan aktivitas mencurigakan yang kemudian ditindaklanjuti personel Kodim 0505/Jakarta Timur bersama unsur kewilayahan.
+
+Kepala Dinas Penerangan TNI AD, Brigjen TNI Donny Pramono, dalam keterangan pada 8 Oktober 2026 menjelaskan bahwa petugas mengamankan 11 warga sipil, terdiri atas enam laki-laki dan lima perempuan. Pemeriksaan lokasi juga menghasilkan penyitaan 32 unit komputer, 14 telepon seluler, dan sembilan KTP sebagai barang bukti. Penanganan tersebut memperlihatkan pentingnya kerja sama antara masyarakat dan aparat dalam mengungkap dugaan aktivitas ilegal, termasuk yang berlangsung di lingkungan fasilitas militer.
+
+Keseriusan penanganan berlanjut pada Jumat, 9 Oktober 2026. Kepala Pusat Penerangan TNI, Mayjen TNI Muhammad Nas, mengonfirmasi bahwa Letkol Inf Arman, perwira yang menempati rumah dinas tersebut, telah ditahan untuk menjalani pemeriksaan di Polisi Militer Kodam Jaya. Berdasarkan keterangan sementara, rumah tersebut diduga disewakan kepada warga sipil yang kemudian menggunakannya untuk kegiatan perjudian daring. Pemeriksaan masih berlangsung untuk memastikan tingkat keterlibatan dan tanggung jawab pihak terkait.
+
+Pada hari yang sama, Kepala Staf Angkatan Darat Jenderal TNI Maruli Simanjuntak menyampaikan bahwa penyalahgunaan rumah dinas untuk judi online merupakan peristiwa yang sangat memalukan bagi institusi. Maruli menegaskan bahwa TNI AD tidak akan melindungi prajurit yang terbukti melanggar hukum. Sikap tersebut menjadi landasan penting bagi penegakan disiplin, sekaligus menegaskan bahwa status dan jabatan tidak boleh menjadi penghalang pemeriksaan secara profesional.
+
+Langkah TNI AD tersebut sejalan dengan kebijakan pemerintahan Presiden Prabowo Subianto dalam memperkuat pemberantasan judi online. Pada 1 Oktober 2026, Menteri Komunikasi dan Digital Meutya Hafid menyampaikan bahwa kementeriannya telah menangani sekitar 4,1 juta konten perjudian digital. Pemerintah juga memperluas pendekatan penanganan dengan menyasar akses perjudian, transaksi, dan aliran dana yang menopang aktivitas tersebut. Ke depan, pengusutan menyeluruh, evaluasi pengawasan rumah dinas, dan keterbukaan hasil pemeriksaan menjadi langkah penting untuk memastikan pemberantasan judi online berjalan konsisten serta menjaga kepercayaan masyarakat terhadap institusi negara.
+
+### Share News
+
+ **For Add Product Review,You Need To Login First**
+
+---
+
+# Pomdam Jaya Tahan Pemilik Rumah Dinas yang Diduga Jadi Markas Judol
+
+> **Sumber:** [SINDOnews Daerah](https://daerah.sindonews.com/read/1758593/6/pomdam-jaya-tahan-pemilik-rumah-dinas-yang-diduga-jadi-markas-judol-1791519052)
+> **Tanggal Publikasi:** Fri, 09 Oct 2026 04:35:56 GMT
+> **Jalur Ekstraksi:** `TIER1_FAST_PATH` | **Jumlah Kata:** 158 kata
+
+loading...
+
+A
+            A
+            A
+
+**JAKARTA**- Kepala Pusat Penerangan (Kapuspen) TNI Mayjen Muhammad Nas menyampaikan bahwa pemilik rumah dinas yang diduga dijadikan markas operasional judi online (judol) telah ditahan di Pomdam Jaya . Rumah dinas tersebut berada di kawasan Kompleks KPAD Cijantung, Jakarta Timur.
+
+Nas menambahkan, penahanan terduga pelaku dilakukan untuk kepentingan pemeriksaan lebih lanjut. "Terduga sudah ditahan dalam rangka pemeriksaan di Pomdam Jaya," kata Nas saat dihubungi, Jumat (9/10/2026).
+
+Sebelumnya, 11 orang yang diduga sebagai operator juga telah diamankan. Mereka diamankan berserta sejumlah barang bukti berupa 32 unit komputer, 14 telepon seluler, dan sembilan KTP.
+
+**Baca Juga: PPATK Pastikan Blokir Rekening Penerima Bansos Terdeteksi Judol**
+
+Kepala Dinas Penerangan Angkatan Darat (Kadispenad) Brigjen TNI Donny Pramono menjelaskan, pengungkapan kasus ini berawal dari laporan yang mencurigai adanya aktivitas tidak wajar di salah satu rumah di lingkungan tersebut. Informasi tersebut pun ditindaklanjuti oleh Kodim 0505/Jakarta Timur.
+
+Lihat Juga :
+
+---
+
+# 652 Ribu Keluarga di Bali Daftar Portal Perlinsos, Ini Kata Meutya Hafid » DIALEKSIS :: Dialetika dan Analisis
+
+> **Sumber:** [dialeksis.com](https://dialeksis.com/nasional/652-ribu-keluarga-di-bali-daftar-portal-perlinsos-ini-kata-meutya-hafid/)
+> **Tanggal Publikasi:** Fri, 09 Oct 2026 14:30:00 GMT
+> **Jalur Ekstraksi:** `TIER1_FAST_PATH` | **Jumlah Kata:** 198 kata
+
+**DIALEKSIS.COM | Denpasar** - Menteri Komunikasi dan Digital (Menkomdigi) Meutya Hafid menyebut digitalisasi perlindungan sosial (Perlinsos) harus memudahkan masyarakat mengakses bantuan pemerintah. Bali menjadi lokasi uji coba sekaligus evaluasi sebelum program diperluas ke daerah lain.
+
+Hingga minggu pertama Oktober 2026, sebanyak 652.858 keluarga atau 50,52 persen keluarga di Bali telah mendaftar melalui Portal Perlinsos.
+
+“Kami ingin memastikan teknologi yang dibangun pemerintah benar-benar memudahkan masyarakat,” kata Meutya saat meninjau pelaksanaan digitalisasi Perlinsos di Bali, Jumat (9/10/2026).
+
+Melalui Portal Perlinsos, masyarakat dapat memverifikasi identitas, mengajukan permohonan bantuan, memantau proses pengajuan, hingga menyampaikan sanggahan jika hasil penilaian dinilai tidak sesuai. Masyarakat juga dapat memperbaiki data kesejahteraan, termasuk desil, apabila belum mencerminkan kondisi sebenarnya.
+
+Meutya mengatakan, pemerintah turut menghadirkan Agen Perlinsos untuk membantu warga yang kesulitan mengakses layanan digital. Pemerintah juga mendorong gotong royong agar masyarakat dapat membantu warga sekitar yang belum mendaftar.
+
+“Digitalisasi bukan berarti masyarakat harus menghadapi semuanya sendiri. Teknologi harus berjalan bersama gotong royong agar tidak ada warga yang kehilangan kesempatan mendapatkan haknya,” ujarnya.
+
+Meutya menegaskan seluruh proses pendaftaran dan akses layanan Perlinsos digital gratis. Masyarakat diminta menggunakan kanal resmi pemerintah, terutama situs berdomain .go.id, serta tidak memberikan data pribadi atau nomor rekening kepada pihak yang tidak berwenang. \[\*\]
+
+---
+
+# Loading...
+
+> **Sumber:** [Infobanknews](https://infobanknews.com/ksad-malu-rumah-dinas-tni-ad-jadi-markas-judol-kasi-intelijen-garnisun-ditahan)
+> **Tanggal Publikasi:** Fri, 09 Oct 2026 09:56:58 GMT
+> **Jalur Ekstraksi:** `TIER1_FAST_PATH` | **Jumlah Kata:** 457 kata
+
+**Poin Penting:**
+
+- KSAD Jenderal TNI Maruli Simanjuntak menyebut penggunaan rumah dinas TNI AD sebagai markas judol sangat memalukan.
+- Letkol Inf Arman ditahan Pomdam Jaya karena diduga menyewakan rumah dinas kepada operator judol.
+- Petugas mengamankan 11 warga sipil serta menyita 32 komputer, 14 telepon seluler, dan sembilan KTP.
+
+**Jakarta** – Kepala Staf Angkatan Darat (KSAD) Jenderal TNI Maruli Simanjuntak menyebut penggunaan rumah dinas TNI AD sebagai markas judi online (judol) sangat memalukan bagi institusi TNI. Ia memastikan prajurit yang terlibat akan menerima sanksi tegas.
+
+“Ini justru hal yang sangat memalukan buat kami,” kata Maruli saat ditemui di Mabes TNI AD, Jakarta Pusat, seperti dikutip dari *Antara*, Jumat, 9 Oktober 2026.
+
+Maruli menegaskan TNI AD menolak segala bentuk perjudian, termasuk perjudian daring, dan tidak akan melindungi prajurit yang terlibat. Ia juga membenarkan seorang prajurit telah ditahan di Markas Polisi Militer Kodam Jaya (Pomdam Jaya) terkait penyewaan rumah dinas kepada operator judol.
+
+“Kami pastikan enggak mungkinlah kami melindungi (oknum prajurit) yang seperti itu,” tegas Maruli.
+
+Kepala Pusat Penerangan (Kapuspen) TNI Mayjen TNI Muhammad Nas mengonfirmasi bahwa prajurit tersebut ditahan untuk menjalani pemeriksaan. Prajurit itu adalah Letnan Kolonel Inf Arman, yang menjabat Kepala Seksi Intelijen Garnisun Tetap (Gartap) 1/Jakarta.
+
+“Rumah dinas itu ditempati oleh yang bersangkutan dan saat ini dia sudah ditahan dalam rangka pemeriksaan di Pomdam Jaya,” kata Nas saat dikonfirmasi di Jakarta, Jumat.
+
+Nas mengatakan, proses hukum terhadap Arman masih berlangsung. Sanksi akan diberikan sesuai dengan tingkat pelanggaran yang terbukti. Pomdam Jaya juga masih menelusuri keterlibatan Arman dalam pengoperasian judol di rumah dinas tersebut.
+
+“Proses hukum sedang berjalan, pasti sanksi diberikan sesuai tingkatan pelanggaran hukumnya,” kata Nas.
+
+## **Markas Judol di Cijantung Terungkap dari Laporan Warga**
+
+Kasus ini terungkap pada Minggu (4/10), setelah TNI AD menerima laporan mengenai aktivitas mencurigakan di Kompleks Perumahan Angkatan Darat (KPAD) Cijantung, Jakarta Timur.
+
+Menindaklanjuti laporan tersebut, personel Kodim 0505/Jakarta Timur bersama unsur kewilayahan mendatangi lokasi untuk memeriksa tempat kejadian.
+
+“Menindaklanjuti informasi tersebut, personel Kodim 0505/Jakarta Timur bersama unsur kewilayahan mendatangi lokasi dan mengamankan tempat serta barang bukti untuk proses lebih lanjut,” kata Kepala Dinas Penerangan TNI AD Brigjen TNI Donny Pramono.
+
+Petugas menemukan sejumlah komputer di beberapa ruangan yang diduga digunakan untuk menjalankan operasional perjudian daring. Sebanyak 11 warga sipil, terdiri atas 6 laki-laki dan 5 perempuan, kemudian diamankan untuk menjalani pemeriksaan di Detasemen Polisi Militer (Denpom).
+
+“Kami juga sita barang bukti berupa 32 unit komputer, 14 telepon seluler, dan 9 KTP,” ungkap Donny.
+
+## **TNI AD Telusuri Keterlibatan Pihak Lain**
+
+TNI AD menegaskan fasilitas militer tidak boleh digunakan untuk aktivitas ilegal yang merugikan masyarakat. Penyelidikan pun masih berlanjut untuk mengungkap pihak-pihak yang terkait dengan penggunaan rumah dinas tersebut
+
+“TNI AD juga tidak akan membiarkan fasilitas yang berada dalam lingkungannya digunakan untuk kegiatan ilegal yang merugikan masyarakat,” pungkas Donny. (\*)
+
+---
+
+# Kemkomdigi Siapkan Aturan Biaya Antar Barang Makanan di Ojol, Aplikator Bakal Diminta Lebih Transparan - Radar Depok
+
+> **Sumber:** [Radar Depok](https://www.radardepok.com/nasional/94617739156/kemkomdigi-siapkan-aturan-biaya-antar-barang-makanan-di-ojol-aplikator-bakal-diminta-lebih-transparan)
+> **Tanggal Publikasi:** Fri, 09 Oct 2026 07:13:40 GMT
+> **Jalur Ekstraksi:** `TIER1_FAST_PATH` | **Jumlah Kata:** 353 kata
+
+**RADARDEPOK.COM -** Kementerian Komunikasi dan Digital (Kemkomdigi) tengah menyiapkan aturan baru untuk layanan pengantaran barang dan makanan berbasis ojek online (ojol).
+
+Aturan ini akan mengatur transparansi pembentukan harga sekaligus memperkuat perlindungan bagi pengemudi.
+
+Hal ini disampaikan Wakil Menteri Komunikasi dan Digital Nezar Patria di Kompleks Parlemen, Jakarta, Kamis (8/10/2026).
+
+Ia mengatakan kebijakan tersebut merupakan tindak lanjut Perpres Nomor 27 Tahun 2026 tentang perlindungan ekosistem transportasi berbasis platform digital.
+
+**Baca Juga: Perkuat Penyelenggaraan Sekolah Rakyat, Kemensos Jalin Kolaborasi dengan BRIN**
+
+Melalui aturan turunan berupa Peraturan Menteri Komunikasi dan Digital, pemerintah akan mengatur biaya jasa transportasi untuk layanan pengantaran barang dan makanan. Platform juga akan diminta lebih terbuka mengenai proses penentuan harga layanan.
+
+“*Di sana akan dijelaskan jaminan angkutan dan transparansi bagaimana pembentukan harga itu dilakukan oleh platform*,” ujar Nezar.
+
+Menurut Nezar, pengaturan ini memiliki dua tujuan utama, yakni meningkatkan pendapatan pengemudi dan memberikan perlindungan yang lebih baik saat mereka menjalankan pekerjaan.
+
+Kemkomdigi juga telah melakukan sejumlah simulasi sebagai bagian dari persiapan penyusunan aturan tersebut.
+
+**Baca Juga: Jadi BRILink Agen Sejak 2016, Nova Yulianti Dekatkan Akses Keuangan di Muara Enin**
+
+Dalam pelaksanaannya, pemerintah membagi kewenangan pengaturan transportasi online kepada sejumlah kementerian. Kementerian Perhubungan menangani layanan pengangkutan orang beserta tarifnya, sedangkan Kemkomdigi mengatur layanan pengantaran barang dan makanan.
+
+Menteri Perhubungan Dudy Purwagandhi sebelumnya menyampaikan bahwa biaya platform untuk layanan ojol dibatasi maksimal 8 persen. Ketentuan tersebut telah dituangkan dalam Keputusan Menteri Perhubungan.
+
+Sementara itu, Kementerian UMKM, Kementerian Perhubungan, dan Kemkomdigi akan membentuk Forum Komunikasi atau Sekretariat Bersama untuk menyelaraskan pelaksanaan kebijakan tersebut. Forum ini akan dipimpin Menteri UMKM Maman Abdurrahman.
+
+Pemerintah menargetkan peraturan pelaksanaan Perpres Nomor 27 Tahun 2026 rampung paling lambat akhir Desember 2026.\*\*\*
+
+## Artikel Terkait
+
+## Perpres Ojol Belum Terbit, Puan Sebut Pembahasan Masih Berlangsung
+
+## Perpres Ojol Ditargetkan Terbit Akhir Agustus 2026
+
+## Polres Bogor Gandeng Ratusan Ojol, Kapolres: Kamtibmas Tanggung Jawab Bersama
+
+## Ada Petani hingga Ojol, Dedi Mulyadi Ungkap Program Asuransi untuk Pekerja Informal di Jabar
+
+## Dari Pedagang hingga Ojol, Pekerja Mandiri Kini Bisa Dapat Perlindungan
+
+## Hubungan Ojol dan Aplikator Bakal Punya Aturan Sendiri, Ini Penjelasan DPR
+
+## Pemerintah Perkuat Aturan Baru Ojol, Biaya Platform Maksimal 8 Persen
+
+---
+
+# Nasib Whoosh Dibahas, Kemenkeu Ungkap Siapkan Perpres - Radar Depok
+
+> **Sumber:** [Radar Depok](https://www.radardepok.com/nasional/94617739636/nasib-whoosh-dibahas-kemenkeu-ungkap-siapkan-perpres)
+> **Tanggal Publikasi:** Fri, 09 Oct 2026 08:50:54 GMT
+> **Jalur Ekstraksi:** `TIER1_FAST_PATH` | **Jumlah Kata:** 340 kata
+
+**RADARDEPOK.COM -** Pemerintah tengah menyiapkan Peraturan Presiden (Perpres) untuk mengatur keberlanjutan operasional Kereta Cepat Jakarta-Bandung atau Whoosh, termasuk penyelesaian persoalan keuangan proyek tersebut.
+
+Direktur Jenderal Kekayaan Negara Kementerian Keuangan Evita Manthovani mengatakan, aturan ini akan menjadi dasar hukum bagi proses pengalihan saham PT Pilar Sinergi BUMN Indonesia (PSBI) kepada pemerintah melalui Kementerian Keuangan.
+
+Rencana tersebut disampaikan Evita dalam konferensi pers APBN KiTa edisi Oktober 2026 di Kantor Kemenkeu, Jakarta, Jumat (9/10/2026).
+
+Menurut Evita, Perpres yang sedang disusun tidak hanya mengatur pengalihan saham, tetapi juga memperjelas pembagian peran, hak, dan kewajiban setiap pihak yang terlibat dalam pengelolaan Whoosh.
+
+“*Pemerintah saat ini sedang menyiapkan landasan hukum dalam bentuk Perpres mengenai keberlanjutan Kereta Cepat Jakarta-Bandung melalui pengalihan saham PSBI ke pemerintah cq Kementerian Keuangan*,” ujar Evita.
+
+Ia menjelaskan, pemerintah ingin memastikan operasional Whoosh tetap berjalan dengan baik karena layanan tersebut telah menjadi bagian dari mobilitas masyarakat.
+
+**Baca Juga: Perkuat Penyelenggaraan Sekolah Rakyat, Kemensos Jalin Kolaborasi dengan BRIN**
+
+Di sisi lain, kewajiban keuangan proyek juga perlu dikelola secara hati-hati agar tidak membebani Anggaran Pendapatan dan Belanja Negara (APBN) secara berlebihan.
+
+Penyusunan Perpres ini melibatkan Kementerian Keuangan, Kementerian Perhubungan, BUMN, serta Badan Pengelola Investasi (BPI) Danantara. Pemerintah berharap aturan tersebut dapat memberikan kepastian dalam pengelolaan proyek sekaligus menjaga keberlangsungan layanan kereta cepat.
+
+Evita menegaskan, penyelesaian persoalan Whoosh perlu dilakukan secara terukur, terintegrasi, dan akuntabel. Dengan landasan hukum yang jelas, proses pengalihan saham dan pengelolaan selanjutnya diharapkan berjalan lebih tertata, tanpa mengabaikan kondisi keuangan negara.\*\*\*
+
+## Artikel Terkait
+
+## Soal Utang Kereta Cepat Whoosh dari APBN, Menkeu Purbaya Ungkap Minta Tunggu Syarat dari China
+
+## Menkeu Purbaya Buka Suara Soal Pengelolaan Whoosh yang Diambil Alih oleh Kemenkeu
+
+## Kemenkeu Ambil Alih Utang Kereta Cepat Whoosh, Purbaya Pastikan Tak Bebani APBN
+
+## Ditanya Utang Whoosh Setelah Lengser, Purbaya: Alhamdulillah, Selamat Saya
+
+## Menkeu Suahasil Lantik 14 Pejabat Baru di Kemenkeu, Ini Daftar Lengkapnya
+
+## Dorong Kepatuhan Pajak, Kemenkeu Satu Wilayah Jawa Barat Lelang Serentak 123 Aset dengan Nilai Limit Capai Rp 24,72 Miliar
+
+## Kembali ke Kemenkeu Setelah Dicopot Purbaya, Luky Alfirman Minta Dukungan untuk Kejar Ketertinggalan
+
+---
+
+# Perkuat Penyelenggaraan Sekolah Rakyat, Kemensos Jalin Kolaborasi dengan BRIN - Radar Depok
+
+> **Sumber:** [Radar Depok](https://www.radardepok.com/nasional/94617739067/perkuat-penyelenggaraan-sekolah-rakyat-kemensos-jalin-kolaborasi-dengan-brin)
+> **Tanggal Publikasi:** Fri, 09 Oct 2026 06:56:33 GMT
+> **Jalur Ekstraksi:** `TIER1_FAST_PATH` | **Jumlah Kata:** 363 kata
+
+**RADARDEPOK.COM** - Kementerian Sosial (Kemensos) terus berupaya menyempurnakan dan memperbaiki tata kelola pelaksanaan Sekolah Rakyat dengan menjalin kolaborasi bersama Badan Riset dan Inovasi Nasional (BRIN).
+
+Kolaborasi tersebut guna memperkuat penyelenggaraan Sekolah Rakyat sebagai salah satu program prioritas pemerintah yang dituangkan dalam penandatanganan Nota Kesepahaman (MoU).
+
+Hal itu disampaikan Menteri Sosial Saifullah Yusuf (Gus Ipul) usai menghadiri kegiatan Sekolah Rakyat Terintegrasi (SRT) 1 Kabupaten Bekasi, Cikarang Pusat, pada Kamis (8/10/2026).
+
+**Baca Juga: PPOPM Bogor Ditetapkan Sebagai Venue Bapopsi Cup 2026**
+
+Gus Ipul menyebut kerja sama tersebut bertujuan memanfaatkan berbagai hasil riset dan inovasi dari BRIN guna mendukung kelancaran proses belajar mengajar dan infrastruktur penunjang keseharian siswa di asrama.
+
+Penandatanganan MoU tersebut dilakukan langsung oleh Gus Ipul selalu Menteri Sosial dan Kepala BRIN Arif Satria.
+
+Menurut Gus Ipul, salah satu hasil inovasi BRIN yang dapat dimanfaatkan untuk siswa Sekolah Rakyat, yaitu produk sepatu.
+
+**Baca Juga: Palembang Diselimuti Kabut Asap, BNPB Himbau Warga Gunakan Masker**
+
+Ia mengatakan, produk sepatu dapat diberikan kepada siswa baru pada ajaran tahun depan, terlebih produk tersebut merupakan asli buatan BRIN dan merupakan produk dalam negeri.
+
+Selain itu, BRIN juga menyediakan alat pengolahan sampah dan air bersih guna mendukung infrastruktur.
+
+Gus Ipul mengatakan pihaknya membutuhkan dukungan BRIN dalam upaya penyempurnaan, dan memperbaiki tata kelola penyelenggaraan Sekolah Rakyat.
+
+**Baca Juga: Heboh Pembuatan Video Dokumenter Rp1,37 Miliar, Ini Penjelasan BGN**
+
+Sementara itu, Kepala BRIN Arif Satria mengatakan bahwa pihaknya akan terus memperkuat sinergi dengan Kemensos melalui riset dan inovasi sesuai kebutuhan guna mendukung Sekolah Rakyat.
+
+Menurutnya melalui Sekolah Rakyat, Presiden Prabowo ingin memperluas akses pendidikan bagi anak-anak untuk dididik dan dikembangkan potensinya.\*\*\*
+
+## Artikel Terkait
+
+## Data Desil DTSEN Berubah Drastis, Ini Penjelasan Kemensos
+
+## 1.738 Warga Kelurahan Sukmajaya Depok Terima Bantuan Beras Kemensos, Lurah : Periode Sebelumnya Membludak Banget
+
+## Kemensos Siap Salurkan Bantuan Jadup dan Isian Rumah Lewat PT Pos untuk Warga Terdampak Bencana di Sumatra
+
+## Percepat Penyaluran Bansos, Kemensos dan PT Pos Indonesia Rancang Skema Baru
+
+## Mensos Gus Ipul Dukung Program Presiden Prabowo Tentang Gerakan Indonesia ASRI di Lingkungan Kemensos
+
+## Tampung Aduan Sekolah Rakyat, Kemensos Siapkan Sistem Pelaporan Terpadu Via WhatsApp
+
+## Kemensos Tindak Tegas PNS dan PPPK Terlibat Judol, Gus Ipul Beri Hukuman Disiplin Ringan Hingga Berat
