@@ -366,6 +366,42 @@ class TestCPTTextSanitizer(unittest.TestCase):
         self.assertIn("Pemerintah terus memperkuat hilirisasi teknologi.", clean)
         self.assertIn("Infrastruktur data center ramah lingkungan dibangun di berbagai daerah.", clean)
 
+    def test_cms_metadata_counters_and_rubrics_purged(self):
+        """Memastikan view counter, uploader CMS, rubrik tunggal, dan tanggal mentah dibuang."""
+        raw = (
+            "### Judul Artikel Sama\n\n"
+            "PENDIDIKAN\n\n"
+            "Oct 17, 2026 -\n\n"
+            "Diposting Oleh : Newsroom Diskominfosantik -\n\n"
+            "Dibaca : 373 Kali\n\n"
+            "CIKARANG PUSAT - Pemerintah Kabupaten Bekasi memperkuat dukungan pendidikan vokasi."
+        )
+        clean = sanitize_cpt_text(raw, title="Judul Artikel Sama")
+        self.assertNotIn("PENDIDIKAN", clean)
+        self.assertNotIn("Oct 17, 2026 -", clean)
+        self.assertNotIn("Diposting Oleh :", clean)
+        self.assertNotIn("Dibaca : 373 Kali", clean)
+        self.assertNotIn("### Judul Artikel Sama", clean)
+        self.assertNotIn("CIKARANG PUSAT -", clean)
+        self.assertEqual(clean, "Pemerintah Kabupaten Bekasi memperkuat dukungan pendidikan vokasi.")
+
+    def test_photo_captions_and_copyright_disclaimers_purged(self):
+        """Memastikan caption foto, kredit fotografer, disclaimer copyright, dan anti-crawling dibuang."""
+        raw = (
+            "Kegiatan sosialisasi literasi digital berlangsung sukses di aula pertemuan.\n\n"
+            "Foto : Imanuddin/Diskominfosantik.\n\n"
+            "Peserta antusias mengikuti seluruh rangkaian materi yang disampaikan.\n\n"
+            "Dilarang keras mengambil konten, melakukan crawling atau pengindeksan otomatis untuk AI di situs web ini tanpa izin tertulis dari Kantor Berita ANTARA.\n\n"
+            "Copyright © ANTARA 2026"
+        )
+        clean = sanitize_cpt_text(raw)
+        self.assertNotIn("Foto : Imanuddin/Diskominfosantik.", clean)
+        self.assertNotIn("Dilarang keras mengambil konten", clean)
+        self.assertNotIn("Copyright ©", clean)
+        self.assertIn("Kegiatan sosialisasi literasi digital berlangsung sukses di aula pertemuan.", clean)
+        self.assertIn("Peserta antusias mengikuti seluruh rangkaian materi yang disampaikan.", clean)
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
+

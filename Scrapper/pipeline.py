@@ -132,53 +132,96 @@ def sanitize_cpt_text(text: str, title: str = "") -> str:
     # 6. Pembersihan tag embed dan derau multimedia
     text = re.sub(r"\[gambas:[^\]]+\]", "", text, flags=re.I)
 
-    # 7. Pembersihan baris demi baris (Baca juga, Simak video, Footer redaksi, CTA sosial media)
+    # 7. Pembersihan baris demi baris (Metadata CMS, Rubrik, View Counter, CTA, Iklan, dan Caption Foto)
+    RUBRIC_KEYWORDS = {
+        "PENDIDIKAN", "POLITIK", "EKONOMI", "HUKUM", "KESEHATAN", "OLAHRAGA",
+        "INTERNASIONAL", "NASIONAL", "TEKNO", "TEKNOLOGI", "HIBURAN", "NEWS", "DAERAH",
+        "REGIONAL", "METRO", "HUMANIORA", "OPINI", "FINANCE", "LIFESTYLE",
+        "JABAR", "JATENG", "JATIM", "SUMUT", "SULSEL", "BALI", "OTOMOTIF", "EDUKASI",
+        "KAMPUS", "BERITA", "ARTIKEL", "PROFIL", "FOTO", "VIDEO", "LIPUTAN KHUSUS",
+        "SOROTAN", "HEADLINE", "INDEX", "INDEKS", "KABAR", "EVENT", "AGENDA", "PUBLIKASI"
+    }
+
+    norm_title = re.sub(r"[^\w\s]", "", title).lower().strip() if title else ""
     clean_lines = []
+
     for line in text.splitlines():
         line_str = line.strip()
         if not line_str:
             clean_lines.append("")
             continue
 
+        # A. Eliminasi judul duplikat di dalam body (heading ### yang sama dengan title)
+        norm_line = re.sub(r"^[#\s\*\_]+|[#\s\*\_]+$", "", line_str).strip()
+        clean_norm_line = re.sub(r"[^\w\s]", "", norm_line).lower().strip()
+        if norm_title and clean_norm_line and (
+            clean_norm_line == norm_title
+            or (len(clean_norm_line) > 20 and clean_norm_line in norm_title)
+            or (len(norm_title) > 20 and norm_title in clean_norm_line)
+        ):
+            continue
+
         if line_str.startswith("#"):
             clean_lines.append(line_str)
             continue
 
-        if re.match(r"^(?:\*\*|__)?\s*(?:baca\s+juga|simak\s+juga|simak\s+video|pilihan\s+editor|artikel\s+ini\s+telah\s+tayang|tonton\s+video|lihat\s+juga|lire\s+l'article\s+complet|read\s+more|baca\s+selengkapnya)\s*:?", line_str, re.I):
+        # B. Eliminasi view/hit counter (misal: "Dibaca : 373 Kali", "Views: 1200")
+        if re.match(r"^(?:\*\*|__)?\s*(?:dibaca|dilihat|view(?:s|ed)?|reads?|tayang)\s*:\s*\d+.*$", line_str, re.I):
+            continue
+        if re.match(r"^\d+\s+(?:kali\s+dibaca|views?|reads?)$", line_str, re.I):
             continue
 
+        # C. Eliminasi metadata author/uploader CMS (misal: "Diposting Oleh : Newsroom Diskominfosantik -")
+        if re.match(r"^(?:\*\*|__)?\s*(?:diposting(?:\s+oleh)?|diterbitkan(?:\s+oleh)?|dipublikasikan(?:\s+pada)?|posted(?:\s+by)?|penulis|reporter|editor|kontributor|redaktur|alih\s+bahasa|rilis|tanggal(?:\s+rilis)?|update)\s*:\s*[^\n]+$", line_str, re.I):
+            continue
+
+        # D. Eliminasi rubrik/kategori terisolasi (misal: "PENDIDIKAN", "EKONOMI")
+        if (line_str.upper() in RUBRIC_KEYWORDS) or (re.match(r"^[A-Z\s]{3,20}$", line_str) and len(line_str.split()) <= 2):
+            continue
+
+        # E. Eliminasi timestamp/tanggal mentah (misal: "Oct 17, 2026 -", "14 Okt 2026 10:18 WIB")
+        if re.match(r"^(?:(?:senin|selasa|rabu|kamis|jumat|sabtu|minggu|monday|tuesday|wednesday|thursday|friday|saturday|sunday)[,\s]+)?(?:(?:jan|feb|mar|apr|mei|may|jun|jul|agu|aug|sep|okt|oct|nov|des|dec)[a-z]*|\d{1,2})\s+\d{1,2}[,\s\-]+(?:\d{4})?(?:\s+[-–—|•]\s*)?(?:\s*\d{1,2}:\d{2}(?::\d{2})?(?:\s*(?:wib|wita|wit|gmt|utc))?)?\s*[-–—]?$", line_str, re.I):
+            continue
+
+        # F. Eliminasi derau navigasi & CTA sosial media
+        if re.match(r"^(?:\*\*|__)?\s*(?:baca\s+juga|simak\s+juga|simak\s+video|pilihan\s+editor|artikel\s+ini\s+telah\s+tayang|tonton\s+video|lihat\s+juga|lire\s+l'article\s+complet|read\s+more|baca\s+selengkapnya)\s*:?", line_str, re.I):
+            continue
         if re.match(r"^(?:\*\*|__)?\s*(?:dapatkan\s+update\s+berita|ikuti\s+saluran\s+whatsapp|simak\s+berita\s+terbaru\s+di|download\s+aplikasi|klik\s+di\s+sini\s+untuk\s+berlangganan|bergabunglah\s+dengan\s+saluran)", line_str, re.I):
             continue
 
-        if re.match(r"^(?:penulis|reporter|editor|kontributor|redaktur|alih\s+bahasa)\s*:\s*[^\n]+$", line_str, re.I):
+        # G. Eliminasi caption gambar & kredit foto
+        if re.search(r"(?:foto|photo|dok(?:umen)?|ilustrasi|sumber\s+foto)\s*:\s*[A-Za-z0-9/\.\s\-\*\_]+$", line_str, re.I) and len(line_str) < 300:
+            continue
+        if re.match(r"^\(?(?:foto|photo|dok(?:umen)?|ilustrasi)\s*[:/]\s*[^\n\)]+\)?$", line_str, re.I):
+            continue
+
+        # H. Eliminasi copyright, disclaimer anti-crawler, dan arsip paywall
+        if re.search(r"(?:dilarang keras mengambil|copyright\s*(?:©|\(c\)|&copy;)|hak cipta dilindungi|all rights reserved|artikel ini telah masuk arsip|artikel ini telah tayang di|crawling atau pengindeksan otomatis untuk ai|simak breaking news)", line_str, re.I):
             continue
 
         clean_lines.append(line_str)
 
-    text = "\n".join(clean_lines)
-
-    # 8. Pembersihan inisial redaksi di akhir teks (misal: (kcm/ard), (dna/dna), (ant/red))
-    text = re.sub(r"\s*\(\s*[a-zA-Z0-9]{2,5}\s*/\s*[a-zA-Z0-9]{2,5}\s*\)\s*$", "", text.strip(), flags=re.I)
-    text = re.sub(r"\s*\(\s*(?:ant|red|tim)\s*\)\s*$", "", text.strip(), flags=re.I)
-
-    # 9. Pembersihan dateline pembuka jurnalistik (hanya di paragraf konten pembuka, termasuk yang berformat bold/italic)
-    lines = text.splitlines()
+    # 8. Pembersihan dateline pembuka jurnalistik (pada paragraf narasi pertama yang substansial)
     new_lines = []
     dateline_checked = False
-    for line in lines:
+    dateline_pattern = r"^(?:\*\*|__)?\s*[A-Za-z\s,\.\-/\(\)]{2,35}?(?:\*\*|__)?\s*[-–—]{1,2}\s*(?:\*\*|__)?\s*(?=[A-Z])"
+
+    for line in clean_lines:
         stripped = line.strip()
         if not dateline_checked and stripped and not stripped.startswith("#") and not stripped.startswith(">"):
-            cleaned_line = re.sub(
-                r"^(?:\*\*|__)?\s*[A-Z][a-zA-Z\s]{1,25}(?:,\s*[A-Za-z0-9\.\s\-]+)?(?:\s*\([A-Za-z0-9\s/]+\))?\s*[-–—]{1,2}\s*(?:\*\*|__)?\s*",
-                "",
-                stripped
-            )
-            dateline_checked = True
-            if cleaned_line:
-                new_lines.append(cleaned_line)
-            continue
+            cleaned_line = re.sub(dateline_pattern, "", stripped).strip()
+            if len(cleaned_line.split()) >= 3:
+                dateline_checked = True
+                if cleaned_line:
+                    new_lines.append(cleaned_line)
+                continue
         new_lines.append(line)
+
     text = "\n".join(new_lines)
+
+    # 9. Pembersihan inisial redaksi di akhir teks (misal: (kcm/ard), (dna/dna), (ant/red))
+    text = re.sub(r"\s*\(\s*[a-zA-Z0-9]{2,5}\s*/\s*[a-zA-Z0-9]{2,5}\s*\)\s*$", "", text.strip(), flags=re.I)
+    text = re.sub(r"\s*\(\s*(?:ant|red|tim)\s*\)\s*$", "", text.strip(), flags=re.I)
 
     # 10. Rasionalisasi spasi dan baris kosong
     text = re.sub(r"[ \t]{2,}", " ", text)
