@@ -623,6 +623,23 @@ class TestHeadlineAndEmbedNoiseCleaning(unittest.TestCase):
         self.assertNotIn("bg-black", cleaned_html)
         self.assertIn("DUGAAN", cleaned_html)
 
+    def test_multi_word_regional_antara_suffix_purged(self):
+        """Memastikan akhiran ANTARA News dengan nama provinsi 2-3 kata (Kalimantan Timur, Jawa Timur, dll) dibersihkan."""
+        t1 = "Dinsos Kaltim dan DPR sinergikan perluasan akses Sekolah Rakyat - ANTARA News Kalimantan Timur"
+        t2 = "Siswa Sekolah Rakyat Terintegrasi 1 Banyuwangi berkembang positif - ANTARA News Jawa Timur"
+        t3 = "Sekolah Rakyat Terintegrasi 76 Mimika bina 58 siswa - ANTARA News Kalimantan Barat"
+        self.assertEqual(clean_headline_title(t1), "Dinsos Kaltim dan DPR sinergikan perluasan akses Sekolah Rakyat")
+        self.assertEqual(clean_headline_title(t2), "Siswa Sekolah Rakyat Terintegrasi 1 Banyuwangi berkembang positif")
+        self.assertEqual(clean_headline_title(t3), "Sekolah Rakyat Terintegrasi 76 Mimika bina 58 siswa")
+
+    def test_server_side_paywall_schema_rejection(self):
+        """Memastikan artikel paywall yang dideklarasikan lewat Schema.org isAccessibleForFree: false ditolak."""
+        html_paywall = '<script type="application/ld+json">{"@type":"NewsArticle","isAccessibleForFree":false}</script>'
+        short_lead = "Dugaan perundungan siswa sekolah rakyat di kabupaten pati jawa tengah terjadi pada akhir bulan lalu."
+        worthy, reason = is_cpt_worthy_content("https://www.tempo.co/politik/123", short_lead, min_words=10, raw_html=html_paywall)
+        self.assertFalse(worthy)
+        self.assertIn("isAccessibleForFree", reason)
+
 
 class TestBotSolverDelegator(unittest.TestCase):
     def test_solve_captcha_via_bot_offline_graceful_fallback(self):

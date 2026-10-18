@@ -118,7 +118,7 @@ def get_css_selector_for_url(
 
 MEDIA_SUFFIX_REGEX = re.compile(
     r"\s+[-–—|•]\s+(?:"
-    r"ANTARA\s+News(?:\s+[A-Za-z0-9]+)?"
+    r"ANTARA\s+News(?:\s+[A-Za-z0-9]+){0,3}"
     r"|ANTARA"
     r"|detik[A-Za-z0-9]*"
     r"|detik\.com"
@@ -127,9 +127,9 @@ MEDIA_SUFFIX_REGEX = re.compile(
     r"|CNN\s+Indonesia"
     r"|CNBC\s+Indonesia"
     r"|Tribunnews(?:\.com)?"
-    r"|Tribun\s+[A-Za-z0-9]+"
+    r"|Tribun\s+[A-Za-z0-9]+(?:\s+[A-Za-z0-9]+)?"
     r"|Liputan6(?:\.com)?"
-    r"|RRI(?:\s+[A-Za-z0-9]+)?(?:\.co\.id)?"
+    r"|RRI(?:\s+[A-Za-z0-9]+){0,3}(?:\.co\.id)?"
     r"|InfoPublik(?:\s+id)?"
     r"|Kumparan[A-Za-z0-9]*"
     r"|Bisnis(?:\.com)?"
@@ -589,7 +589,7 @@ PAYWALL_MARKERS = (
 )
 
 
-def is_cpt_worthy_content(url: str, text: str, min_words: int = 25, title: str = "") -> Tuple[bool, str]:
+def is_cpt_worthy_content(url: str, text: str, min_words: int = 25, title: str = "", raw_html: str = "") -> Tuple[bool, str]:
     """Mengevaluasi apakah teks hasil ekstraksi memenuhi standar CPT."""
     domain = urlparse(url).netloc.lower()
     if any(bd in domain for bd in BAD_DOMAINS):
@@ -620,6 +620,13 @@ def is_cpt_worthy_content(url: str, text: str, min_words: int = 25, title: str =
     for phrase in BLOCK_PHRASES:
         if phrase in first_800:
             return False, f"Deteksi halaman blokir WAF / Error screen ('{phrase}')"
+
+    if raw_html:
+        h_low = raw_html.lower()
+        if ('"isaccessibleforfree": false' in h_low or '"isaccessibleforfree":false' in h_low) and len(words) < 200:
+            return False, "Deteksi stub paywall / konten berbayar (Schema.org isAccessibleForFree: false)"
+        if any(w in h_low for w in ('class="bg-black', 'class="paywall', 'id="paywall')) and any(w in h_low for w in ('tempo+', 'berlangganan kompas.id')) and len(words) < 200:
+            return False, "Deteksi stub paywall terpotong dari kontainer berlangganan"
 
     return True, "Valid CPT"
 
@@ -839,7 +846,7 @@ class HybridAsyncCrawler:
                 final_url = str(resp.url)
                 title = extract_clean_headline(resp.text, fallback_title=fallback_title, source=source)
                 md_content = convert_html_to_markdown(resp.text, url=final_url, title=title)
-                worthy, _ = is_cpt_worthy_content(final_url, md_content, min_words=self.min_words, title=title)
+                worthy, _ = is_cpt_worthy_content(final_url, md_content, min_words=self.min_words, title=title, raw_html=resp.text)
                 if worthy:
                     # Deteksi konten terpotong / Unhydrated SPA Mismatch (Auto-fallback ke Tier 2)
                     words = md_content.split()
@@ -944,7 +951,7 @@ class HybridAsyncCrawler:
                         raw_html = await _extract_html()
 
                     md_text = convert_html_to_markdown(raw_html, url=final_url, title=page_title)
-                    worthy, reason = is_cpt_worthy_content(final_url, md_text, min_words=self.min_words, title=page_title)
+                    worthy, reason = is_cpt_worthy_content(final_url, md_text, min_words=self.min_words, title=page_title, raw_html=full_page_html)
                     status = "SUCCESS" if worthy else f"FILTERED: {reason}"
                     tier_label = "TIER2_PLAYWRIGHT"
 
