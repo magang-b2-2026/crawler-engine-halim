@@ -227,8 +227,66 @@ def sanitize_cpt_text(text: str, title: str = "") -> str:
     text = re.sub(r"\s*(?:\*\*|__)?\s*\(\s*[a-zA-Z0-9]{2,5}\s*/\s*[a-zA-Z0-9]{2,5}\s*\)\s*(?:\*\*|__)?\s*$", "", text.strip(), flags=re.I)
     text = re.sub(r"\s*(?:\*\*|__)?\s*\(\s*(?:ant|red|tim)\s*\)\s*(?:\*\*|__)?\s*$", "", text.strip(), flags=re.I)
 
-    # 10. Rasionalisasi spasi dan baris kosong
-    text = re.sub(r"[ \t]{2,}", " ", text)
+    # 10. Normalisasi spasi dan pemisahan antar paragraf Markdown
+    # Setiap paragraf naratif terpisah oleh baris kosong (\n\n) sesuai kaidah Markdown/CommonMark untuk CPT LLM
+    # Sementara item list berturut-turut (- , * , 1. ), blockquote (> ), dan tabel (| ) tetap rapat
+    def is_bullet(s: str) -> bool:
+        return bool(re.match(r"^\s*[-*+]\s+", s))
+
+    def is_numbered(s: str) -> bool:
+        return bool(re.match(r"^\s*\d+[\.\)]\s+", s))
+
+    def is_quote(s: str) -> bool:
+        return s.lstrip().startswith(">")
+
+    def is_table(s: str) -> bool:
+        st = s.strip()
+        return st.startswith("|") and st.endswith("|")
+
+    non_empty = [l.rstrip() for l in text.splitlines() if l.strip()]
+    formatted = []
+    in_code = False
+
+    for idx, s in enumerate(non_empty):
+        stripped = s.strip()
+        if stripped.startswith("```"):
+            in_code = not in_code
+            formatted.append(s)
+            if not in_code and idx < len(non_empty) - 1:
+                formatted.append("")
+            continue
+
+        formatted.append(s)
+        if in_code:
+            continue
+
+        if idx < len(non_empty) - 1:
+            next_s = non_empty[idx + 1]
+            next_stripped = next_s.strip()
+            if next_stripped.startswith("```"):
+                formatted.append("")
+                continue
+            if is_bullet(s) and is_bullet(next_s):
+                continue
+            if is_numbered(s) and is_numbered(next_s):
+                continue
+            if is_quote(s) and is_quote(next_s):
+                continue
+            if is_table(s) and is_table(next_s):
+                continue
+            formatted.append("")
+
+    clean_paras = []
+    for line in formatted:
+        if not line:
+            clean_paras.append("")
+            continue
+        indent = len(line) - len(line.lstrip(" "))
+        indent_str = " " * indent
+        collapsed = re.sub(r"[ \t]{2,}", " ", line.lstrip(" "))
+        clean_paras.append(indent_str + collapsed)
+
+    text = "\n".join(clean_paras)
     text = re.sub(r"\n{3,}", "\n\n", text)
 
     return text.strip()

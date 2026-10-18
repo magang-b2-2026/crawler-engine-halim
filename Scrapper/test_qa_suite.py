@@ -407,6 +407,38 @@ class TestCPTTextSanitizer(unittest.TestCase):
         self.assertIn("Kegiatan sosialisasi literasi digital berlangsung sukses di aula pertemuan.", clean)
         self.assertIn("Peserta antusias mengikuti seluruh rangkaian materi yang disampaikan.", clean)
 
+    def test_paragraph_blank_line_separation(self):
+        """Memastikan ada baris kosong (\n\n) antar paragraf narasi, sementara list tetap rapat."""
+        raw = (
+            "Paragraf pertama narasi berita.\n"
+            "Paragraf kedua narasi berita yang sebelumnya menempel.\n"
+            "Daftar rekomendasi:\n"
+            "- Rekomendasi A\n"
+            "- Rekomendasi B\n"
+            "  - Sub poin B1\n"
+            "Tahapan implementasi:\n"
+            "1. Tahap persiapan\n"
+            "2. Tahap eksekusi\n"
+            "> Pernyataan kutipan satu\n"
+            "> Pernyataan kutipan dua\n"
+            "Paragraf penutup artikel."
+        )
+        clean = sanitize_cpt_text(raw)
+        
+        # Paragraf narasi wajib terpisah oleh baris kosong (\n\n)
+        self.assertIn("Paragraf pertama narasi berita.\n\nParagraf kedua narasi berita yang sebelumnya menempel.", clean)
+        self.assertIn("Paragraf kedua narasi berita yang sebelumnya menempel.\n\nDaftar rekomendasi:", clean)
+        
+        # Item list berturut-turut harus rapat (single \n)
+        self.assertIn("- Rekomendasi A\n- Rekomendasi B", clean)
+        self.assertIn("1. Tahap persiapan\n2. Tahap eksekusi", clean)
+        self.assertIn("> Pernyataan kutipan satu\n> Pernyataan kutipan dua", clean)
+        
+        # Batas list ke paragraf berikutnya terpisah oleh baris kosong (\n\n)
+        self.assertIn("- Sub poin B1\n\nTahapan implementasi:", clean)
+        self.assertIn("2. Tahap eksekusi\n\n> Pernyataan kutipan satu", clean)
+        self.assertIn("> Pernyataan kutipan dua\n\nParagraf penutup artikel.", clean)
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
