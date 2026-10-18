@@ -29,6 +29,10 @@ from Scrapper.pipeline import (
     sanitize_cpt_text,
     clean_canonical_url,
     solve_captcha_via_bot,
+    clean_headline_title,
+    extract_clean_headline,
+    clean_html_embedded_noise,
+    is_standalone_emoji,
 )
 
 
@@ -460,6 +464,122 @@ class TestCPTTextSanitizer(unittest.TestCase):
         self.assertEqual(c1, "https://antaranews.com/berita/12345/judul-berita")
         self.assertEqual(c1, c2)
         self.assertEqual(c2, c3)
+
+
+class TestHeadlineAndEmbedNoiseCleaning(unittest.TestCase):
+    def test_clean_headline_title_publisher_suffixes_purged(self):
+        """Memastikan berbagai akhiran media portal (ANTARA, detik, Kompas, KemenPU, dll) dibersihkan."""
+        cases = [
+            (
+                "Kadet Unhan motivasi siswa Sekolah Rakyat Banyumas untuk meraih cita-cita - ANTARA News Jateng",
+                "ANTARA News Jateng",
+                "Kadet Unhan motivasi siswa Sekolah Rakyat Banyumas untuk meraih cita-cita",
+            ),
+            (
+                "Gus Ipul Apresiasi Wartawan di Anugerah Jurnalistik Sekolah Rakyat 2026 - detikNews",
+                "detikNews",
+                "Gus Ipul Apresiasi Wartawan di Anugerah Jurnalistik Sekolah Rakyat 2026",
+            ),
+            (
+                "Kementerian PU Targetkan Sekolah Rakyat Tahap III Tanah Datar Rampung Tahun 2027 | Kementerian Pekerjaan Umum",
+                "Kementerian Pekerjaan Umum",
+                "Kementerian PU Targetkan Sekolah Rakyat Tahap III Tanah Datar Rampung Tahun 2027",
+            ),
+            (
+                "Inovasi Transformasi Digital Pelayanan Publik - Kompas.com",
+                "Kompas.com",
+                "Inovasi Transformasi Digital Pelayanan Publik",
+            ),
+            (
+                "Pemerintah Percepat Pembangunan Infrastruktur - CNN Indonesia",
+                "CNN Indonesia",
+                "Pemerintah Percepat Pembangunan Infrastruktur",
+            ),
+        ]
+        for raw_title, src, expected in cases:
+            cleaned = clean_headline_title(raw_title, source=src)
+            self.assertEqual(cleaned, expected)
+
+    def test_extract_clean_headline_pu_go_id_double_title_override(self):
+        """Memastikan bug pu.go.id teratasi: title generic kementerian digantikan oleh headline artikel aktual dari og:title/h1."""
+        mock_pu_html = """
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Kementerian Pekerjaan Umum </title>
+            <meta property="og:title" content="Kementerian PU Targetkan Sekolah Rakyat Tahap III Tanah Datar Rampung Tahun 2027">
+            <title>Kementerian PU Targetkan Sekolah Rakyat Tahap III Tanah Datar Rampung Tahun 2027</title>
+        </head>
+        <body>
+            <div class="header"><h1>Kementerian PU Targetkan Sekolah Rakyat Tahap III Tanah Datar Rampung Tahun 2027</h1></div>
+            <p>Paragraf isi berita...</p>
+        </body>
+        </html>
+        """
+        extracted = extract_clean_headline(mock_pu_html, fallback_title="Kementerian Pekerjaan Umum", source="pu.go.id")
+        self.assertEqual(extracted, "Kementerian PU Targetkan Sekolah Rakyat Tahap III Tanah Datar Rampung Tahun 2027")
+
+    def test_extract_clean_headline_antara_suffix_purged(self):
+        """Memastikan bug antaranews teratasi: akhiran ' - ANTARA News Jateng' dibersihkan."""
+        mock_antara_html = """
+        <html>
+        <head>
+            <title>Kadet Unhan motivasi siswa Sekolah Rakyat Banyumas untuk meraih cita-cita - ANTARA News Jateng</title>
+            <meta property="og:title" content="Kadet Unhan motivasi siswa Sekolah Rakyat Banyumas untuk meraih cita-cita - ANTARA News Jateng">
+            <meta name="twitter:title" content="Kadet Unhan motivasi siswa Sekolah Rakyat Banyumas untuk meraih cita-cita">
+        </head>
+        <body>
+            <h1>Kadet Unhan motivasi siswa Sekolah Rakyat Banyumas untuk meraih cita-cita</h1>
+        </body>
+        </html>
+        """
+        extracted = extract_clean_headline(mock_antara_html, fallback_title="Kadet Unhan motivasi...", source="ANTARA News Jateng")
+        self.assertEqual(extracted, "Kadet Unhan motivasi siswa Sekolah Rakyat Banyumas untuk meraih cita-cita")
+
+    def test_campaign_hashtags_and_social_media_blocks_purged(self):
+        """Memastikan tagar kampanye (#SigapMembangunNegeriUntukRakyat) dan blok kontak sosial media dibuang."""
+        raw_text = (
+            "Pembangunan Sekolah Rakyat di Tanah Datar berjalan sesuai rencana dan ditargetkan rampung pada 2027. (Hil)\n\n"
+            "**#SigapMembangunNegeriUntukRakyat**\n\n"
+            "Website: pu.go.id\n"
+            "Facebook: kemenPU\n"
+            "Instagram: kementerianpu\n"
+            "Twitter: @kemenPU\n"
+        )
+        cleaned = sanitize_cpt_text(raw_text, title="Kementerian PU Targetkan Sekolah Rakyat")
+        self.assertNotIn("#SigapMembangunNegeriUntukRakyat", cleaned)
+        self.assertNotIn("Website: pu.go.id", cleaned)
+        self.assertNotIn("Facebook: kemenPU", cleaned)
+        self.assertNotIn("Instagram: kementerianpu", cleaned)
+        self.assertIn("Pembangunan Sekolah Rakyat di Tanah Datar berjalan sesuai rencana", cleaned)
+
+    def test_embedded_video_titles_and_standalone_emojis_purged(self):
+        """Memastikan bug detik.com teratasi: judul video embed dan emoji mandiri di akhir artikel dibuang."""
+        raw_text = (
+            "Gus Ipul menyampaikan apresiasi setinggi-tingginya kepada para insan media dalam acara anugerah jurnalistik.\n\n"
+            "Malam Anugerah Jurnalistik Sekolah Rakyat 2026 menjadi ajang prestasi insan pers.\n\n"
+            "💡\n\n"
+            "**Perjalanan Oscar Motuloh, Sang Maestro Fotografi Jurnalistik Indonesia**\n\n"
+            "(akd/ega)"
+        )
+        cleaned = sanitize_cpt_text(raw_text, title="Gus Ipul Apresiasi Wartawan")
+        self.assertNotIn("Perjalanan Oscar Motuloh", cleaned)
+        self.assertNotIn("💡", cleaned)
+        self.assertNotIn("(akd/ega)", cleaned)
+        self.assertIn("Malam Anugerah Jurnalistik Sekolah Rakyat 2026 menjadi ajang prestasi insan pers.", cleaned)
+
+    def test_html_embed_noise_pre_cleaning(self):
+        """Memastikan kontainer video embed dan tagar/caption sebelumnya didecompose sebelum konversi Markdown."""
+        html_sample = (
+            "<div class='article-body'>"
+            "<p>Paragraf penutup artikel liputan kegiatan jurnalistik nasional.</p>"
+            "<p><strong>Perjalanan Oscar Motuloh, Sang Maestro Fotografi Jurnalistik Indonesia<br/></strong></p>"
+            "<div class='noncontent'><p><a class='embed video20detik' href='https://20.detik.com/embed/123'></a></p></div>"
+            "</div>"
+        )
+        cleaned_html = clean_html_embedded_noise(html_sample)
+        self.assertNotIn("video20detik", cleaned_html)
+        self.assertNotIn("Oscar Motuloh", cleaned_html)
 
 
 class TestBotSolverDelegator(unittest.TestCase):

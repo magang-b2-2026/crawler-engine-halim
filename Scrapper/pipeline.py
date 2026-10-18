@@ -116,6 +116,164 @@ def get_css_selector_for_url(
 # 2. QUALITY GATEKEEPER & MARKDOWN CONVERTER
 # ==============================================================================
 
+MEDIA_SUFFIX_REGEX = re.compile(
+    r"\s+[-–—|•]\s+(?:"
+    r"ANTARA\s+News(?:\s+[A-Za-z0-9]+)?"
+    r"|ANTARA"
+    r"|detik[A-Za-z0-9]*"
+    r"|detik\.com"
+    r"|Kompas(?:\.com|\.id)?"
+    r"|Tempo(?:\.co)?"
+    r"|CNN\s+Indonesia"
+    r"|CNBC\s+Indonesia"
+    r"|Tribunnews(?:\.com)?"
+    r"|Tribun\s+[A-Za-z0-9]+"
+    r"|Liputan6(?:\.com)?"
+    r"|RRI(?:\s+[A-Za-z0-9]+)?(?:\.co\.id)?"
+    r"|InfoPublik(?:\s+id)?"
+    r"|Kumparan[A-Za-z0-9]*"
+    r"|Bisnis(?:\.com)?"
+    r"|JawaPos(?:\.com)?"
+    r"|Media\s+Indonesia"
+    r"|BeritaSatu(?:\.com)?"
+    r"|Suara(?:\.com)?"
+    r"|Merdeka(?:\.com)?"
+    r"|Sindonews(?:\.com)?"
+    r"|IDN\s+Times"
+    r"|JPNN(?:\.com)?"
+    r"|VIVA(?:\.co\.id)?"
+    r"|Kementerian\s+[A-Za-z0-9\s]+"
+    r"|Pemerintah\s+[A-Za-z0-9\s]+"
+    r"|Pemprov\s+[A-Za-z0-9\s]+"
+    r"|Pemkab\s+[A-Za-z0-9\s]+"
+    r"|Disway"
+    r"|Fajar"
+    r"|Koran\s+Jakarta"
+    r"|Tirto\.id"
+    r"|Katadata(?:\.co\.id)?"
+    r")\s*$",
+    re.IGNORECASE,
+)
+
+
+def clean_headline_title(title: str, source: str = "") -> str:
+    """Membersihkan judul dari akhiran/suffix portal media (e.g. ' - ANTARA News Jateng', ' - detikNews')."""
+    if not title:
+        return ""
+    t = re.sub(r"\s+", " ", html.unescape(title)).strip()
+    if source and len(source.strip()) >= 3:
+        src_clean = source.strip()
+        t = re.sub(r"\s+[-–—|•]\s+" + re.escape(src_clean) + r"\s*$", "", t, flags=re.I)
+    t = MEDIA_SUFFIX_REGEX.sub("", t).strip()
+    t = re.sub(r"\s+[-–—|•]\s*$", "", t).strip()
+    return t
+
+
+def extract_clean_headline(html_content: str, fallback_title: str = "", source: str = "") -> str:
+    """Mengekstrak judul/headline artikel paling presisi dari dokumen HTML.
+    Memprioritaskan <meta property='og:title'>, <meta name='twitter:title'>, dan <h1>
+    di atas tag <title> generik portal, serta membersihkan akhiran media."""
+    if not html_content:
+        return clean_headline_title(fallback_title, source=source)
+
+    candidates = []
+
+    # 1. Cek meta og:title dan twitter:title
+    og_m = re.search(r'<meta[^>]+property=["\']og:title["\'][^>]+content=["\']([^"\']+)["\']', html_content, re.I)
+    if not og_m:
+        og_m = re.search(r'<meta[^>]+content=["\']([^"\']+)["\'][^>]+property=["\']og:title["\']', html_content, re.I)
+    if og_m:
+        candidates.append(og_m.group(1))
+
+    tw_m = re.search(r'<meta[^>]+name=["\']twitter:title["\'][^>]+content=["\']([^"\']+)["\']', html_content, re.I)
+    if not tw_m:
+        tw_m = re.search(r'<meta[^>]+content=["\']([^"\']+)["\'][^>]+name=["\']twitter:title["\']', html_content, re.I)
+    if tw_m:
+        candidates.append(tw_m.group(1))
+
+    # 2. Cek tag <h1>
+    for h1_m in re.finditer(r'<h1[^>]*>(.*?)</h1>', html_content, re.I | re.S):
+        h1_text = re.sub(r'<[^>]+>', '', h1_m.group(1))
+        h1_text = re.sub(r'\s+', ' ', h1_text).strip()
+        if len(h1_text) >= 15:
+            candidates.append(h1_text)
+            break
+
+    # 3. Cek tag <title> (ambil semua <title>, saring nama situs pendek jika ada yang lebih panjang)
+    titles = []
+    for t_m in re.finditer(r'<title[^>]*>(.*?)</title>', html_content, re.I | re.S):
+        t_text = re.sub(r'<[^>]+>', '', t_m.group(1))
+        t_text = re.sub(r'\s+', ' ', t_text).strip()
+        if t_text:
+            titles.append(t_text)
+
+    titles.sort(key=lambda s: len(s), reverse=True)
+    candidates.extend(titles)
+
+    # 4. Fallback title
+    if fallback_title:
+        candidates.append(fallback_title)
+
+    GENERIC_NAMES = {
+        "berita", "home", "index", "indeks", "kementerian pekerjaan umum", "pu.go.id",
+        "detikcom", "detiknews", "kompas.com", "antara news", "portal berita", "artikel"
+    }
+
+    for cand in candidates:
+        cleaned = clean_headline_title(cand, source=source)
+        if not cleaned or len(cleaned) < 10:
+            continue
+        c_low = cleaned.lower().strip()
+        if c_low in GENERIC_NAMES:
+            continue
+        if any(w in c_low for w in ("just a moment", "attention required", "security check", "403 forbidden", "access denied", "page not found")):
+            continue
+        return cleaned
+
+    return clean_headline_title(fallback_title, source=source)
+
+
+def clean_html_embedded_noise(html_content: str) -> str:
+    """Membersihkan kontainer video/multimedia embed dan teaser caption sebelumnya dari struktur DOM."""
+    if not html_content or "<" not in html_content:
+        return html_content
+    try:
+        from bs4 import BeautifulSoup
+        soup = BeautifulSoup(html_content, "html.parser")
+        video_selectors = [
+            "div.noncontent", "div.video20detik", "a.video20detik", ".embed_video",
+            ".video-embed", ".embed-video", "iframe[src*='20.detik.com']",
+            "iframe[src*='youtube']", "div[class*='video-box']", "div[class*='detail__video']"
+        ]
+        found = False
+        for el in soup.select(", ".join(video_selectors)):
+            found = True
+            prev = el.find_previous_sibling()
+            while prev and prev.name and prev.get_text(strip=True) == "":
+                prev = prev.find_previous_sibling()
+            if prev and prev.name == "p":
+                prev_text = prev.get_text(strip=True)
+                if (prev.find(["strong", "b"]) or len(prev_text) < 120) and not prev_text.endswith((".", "!", "?")):
+                    prev.decompose()
+            el.decompose()
+        return str(soup) if found else html_content
+    except Exception:
+        return html_content
+
+
+def is_standalone_emoji(line: str) -> bool:
+    """Mendeteksi apakah sebuah baris teks hanya berisi emoji, ikon multimedia, atau simbol grafis."""
+    stripped_no_md = re.sub(r"[\s\*\_\-\#\>\:\(\)\[\]\.\,\;]+", "", line)
+    if not stripped_no_md:
+        return False
+    emoji_cleaned = re.sub(
+        r"[\U00010000-\U0010ffff\u200d\ufe0f\u2600-\u27bf\u2300-\u23ff\u2b50\u2b55\u2934\u2935\u25aa\u25ab\u25b6\u25c0\u25fb-\u25fe]",
+        "",
+        stripped_no_md,
+    )
+    return len(emoji_cleaned) == 0
+
+
 def sanitize_cpt_text(text: str, title: str = "") -> str:
     """Normalisasi tipografi, pembersihan invisible space, tanda petik ASCII, dan derau berita untuk training LLM."""
     if not text or not text.strip():
@@ -223,6 +381,22 @@ def sanitize_cpt_text(text: str, title: str = "") -> str:
         if re.search(r"(?:dilarang keras mengambil|copyright\s*(?:©|\(c\)|&copy;)|hak cipta dilindungi|all rights reserved|artikel ini telah masuk arsip|artikel ini telah tayang di|crawling atau pengindeksan otomatis untuk ai|simak breaking news|donasi lewat tautan|ekspedisi kata ke nyata|mari bantu sesama|rekening donasi)", line_str, re.I):
             continue
 
+        # J. Eliminasi hashtag kampanye / slogan / media sosial (misal: "**#SigapMembangunNegeriUntukRakyat**", "#KemenPU")
+        if re.match(r"^(?:\*\*|__)?\s*#[A-Za-z0-9_]{3,}(?:\s+#[A-Za-z0-9_]{3,})*\s*(?:\*\*|__)?$", line_str):
+            continue
+
+        # K. Eliminasi daftar kontak media sosial resmi (misal: "Website: pu.go.id", "Instagram: kementerianpu")
+        if re.match(r"^(?:\*\*|__)?\s*(?:website|situs|facebook|instagram|x|twitter|tiktok|youtube|threads|telegram|linkedin|email|e-mail)\s*:\s*[^\n]+$", line_str, re.I):
+            continue
+
+        # L. Eliminasi baris emoji terisolasi (misal: "💡", "▶️", "👉")
+        if is_standalone_emoji(line_str):
+            continue
+
+        # M. Eliminasi baris teaser video / multimedia (misal: "💡 **...**", "▶️ **...**", "**Simak Video...**", "**Tonton Video...**")
+        if re.match(r"^(?:\*\*|__)?\s*(?:💡|▶️|video\s*:|simak\s+video|tonton\s+video|saksikan\s+video)", line_str, re.I):
+            continue
+
         clean_lines.append(line_str)
 
     # 8. Pembersihan dateline pembuka jurnalistik (pada paragraf narasi pertama yang substansial)
@@ -243,9 +417,31 @@ def sanitize_cpt_text(text: str, title: str = "") -> str:
 
     text = "\n".join(new_lines)
 
-    # 9. Pembersihan inisial redaksi di akhir teks (misal: (kcm/ard), **(anl/ega)**, (dna/dna), (ant/red))
-    text = re.sub(r"\s*(?:\*\*|__)?\s*\(\s*[a-zA-Z0-9]{2,5}\s*/\s*[a-zA-Z0-9]{2,5}\s*\)\s*(?:\*\*|__)?\s*$", "", text.strip(), flags=re.I)
-    text = re.sub(r"\s*(?:\*\*|__)?\s*\(\s*(?:ant|red|tim)\s*\)\s*(?:\*\*|__)?\s*$", "", text.strip(), flags=re.I)
+    # 9. Pembersihan inisial redaksi di akhir teks (misal: (kcm/ard), **(anl/ega)**, (dna/dna), (ant/red), (Hil))
+    text = re.sub(r"(?:\s+|^)(?:\*\*|__)?\s*\(\s*[a-zA-Z0-9]{2,5}\s*/\s*[a-zA-Z0-9]{2,5}\s*\)\s*(?:\*\*|__)?\s*$", "", text.strip(), flags=re.I)
+    text = re.sub(r"(?:\s+|^)(?:\*\*|__)?\s*\(\s*(?:ant|red|tim|[a-zA-Z]{3,4})\s*\)\s*(?:\*\*|__)?\s*$", "", text.strip(), flags=re.I)
+
+    # 9B. Pembersihan teaser video/promosi berformat tebal terisolasi di akhir artikel (misal: "**Perjalanan Oscar Motuloh...**")
+    temp_lines = text.strip().splitlines()
+    changed = True
+    while changed and temp_lines:
+        changed = False
+        last_line = temp_lines[-1].strip()
+        if not last_line:
+            temp_lines.pop()
+            changed = True
+            continue
+        # Inisial redaksi tersisa di baris terakhir
+        if re.search(r"^(?:\*\*|__)?\s*\(\s*(?:[a-zA-Z0-9]{2,5}\s*/\s*[a-zA-Z0-9]{2,5}|ant|red|tim|[a-zA-Z]{3,4})\s*\)\s*(?:\*\*|__)?$", last_line, re.I):
+            temp_lines.pop()
+            changed = True
+            continue
+        # Trailing bold teaser tanpa tanda baca penutup kalimat (. ! ? :" .")
+        if re.match(r"^(?:\*\*|__)[^\*\_\n]{5,150}(?:\*\*|__)$", last_line) and not re.search(r"[\.!\?\"'](?:\*\*|__)$", last_line):
+            temp_lines.pop()
+            changed = True
+            continue
+    text = "\n".join(temp_lines)
 
     # 10. Normalisasi spasi dan pemisahan antar paragraf Markdown
     # Setiap paragraf naratif terpisah oleh baris kosong (\n\n) sesuai kaidah Markdown/CommonMark untuk CPT LLM
@@ -317,7 +513,8 @@ def convert_html_to_markdown(html_content: str, url: str = "", title: str = "") 
     if not html_content or not html_content.strip():
         return ""
 
-    raw = html_content if ("<html" in html_content[:300].lower() or "<body" in html_content[:300].lower()) else f"<!DOCTYPE html><html><body>{html_content}</body></html>"
+    html_cleaned = clean_html_embedded_noise(html_content)
+    raw = html_cleaned if ("<html" in html_cleaned[:300].lower() or "<body" in html_cleaned[:300].lower()) else f"<!DOCTYPE html><html><body>{html_cleaned}</body></html>"
     raw_md = ""
     try:
         import trafilatura
@@ -330,7 +527,7 @@ def convert_html_to_markdown(html_content: str, url: str = "", title: str = "") 
     if not raw_md:
         try:
             from markdownify import markdownify as md
-            sanitized = re.sub(r"<(script|style|noscript)[^>]*>.*?</\1>", "", html_content, flags=re.I | re.S)
+            sanitized = re.sub(r"<(script|style|noscript)[^>]*>.*?</\1>", "", html_cleaned, flags=re.I | re.S)
             res = md(sanitized, heading_style="ATX", strip=["nav", "footer", "aside", "iframe", "form"])
             res = re.sub(r"\n{3,}", "\n\n", res).strip()
             if res and len(res.split()) >= 15:
@@ -339,7 +536,7 @@ def convert_html_to_markdown(html_content: str, url: str = "", title: str = "") 
             pass
 
     if not raw_md:
-        clean_strip = re.sub(r"<(script|style|noscript)[^>]*>.*?</\1>", "", html_content, flags=re.I | re.S)
+        clean_strip = re.sub(r"<(script|style|noscript)[^>]*>.*?</\1>", "", html_cleaned, flags=re.I | re.S)
         raw_md = re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", clean_strip)).strip()
 
     return sanitize_cpt_text(raw_md, title=title)
@@ -593,15 +790,16 @@ class HybridAsyncCrawler:
             "Upgrade-Insecure-Requests": "1",
         }
 
-    async def _fetch_tier1_fastpath(self, client: httpx.AsyncClient, url: str) -> Optional[Tuple[str, str, str]]:
+    async def _fetch_tier1_fastpath(
+        self, client: httpx.AsyncClient, url: str, fallback_title: str = "", source: str = ""
+    ) -> Optional[Tuple[str, str, str]]:
         if "google.com" in url:
             return None
         try:
             resp = await client.get(url, headers=self.http_headers, follow_redirects=True, timeout=self.timeout)
             if resp.status_code == 200:
                 final_url = str(resp.url)
-                title_m = re.search(r"<title[^>]*>(.*?)</title>", resp.text, re.I | re.S)
-                title = re.sub(r"\s+", " ", html.unescape(title_m.group(1))).strip() if title_m else ""
+                title = extract_clean_headline(resp.text, fallback_title=fallback_title, source=source)
                 md_content = convert_html_to_markdown(resp.text, url=final_url, title=title)
                 worthy, _ = is_cpt_worthy_content(final_url, md_content, min_words=self.min_words, title=title)
                 if worthy:
@@ -627,21 +825,23 @@ class HybridAsyncCrawler:
         target_url = article.get("decoded_url") or article.get("link", "")
         raw_url = article.get("link", "")
         source = article.get("source", "Media")
-        title = re.sub(r"\s+", " ", html.unescape(article.get("title", ""))).strip()
+        raw_title = article.get("title", "")
+        title = clean_headline_title(raw_title, source=source)
         pub_date = article.get("pub_date", "")
 
         async with self.semaphore:
             try:
                 # ---------------- TIER 1: FAST-PATH ----------------
                 t0 = time.time()
-                tier1_res = await self._fetch_tier1_fastpath(client, target_url)
+                tier1_res = await self._fetch_tier1_fastpath(client, target_url, fallback_title=title, source=source)
                 if tier1_res:
                     final_url, md_text, p_title = tier1_res
+                    clean_res_title = clean_headline_title(p_title or title, source=source)
                     elapsed_ms = (time.time() - t0) * 1000
                     words = len(md_text.split())
                     print(f"[{idx}/{total}] [TIER 1 - FAST PATH] ({elapsed_ms:.0f}ms | {words} kata) [{source}] {target_url[:75]}...")
                     return {
-                        "url": final_url, "raw_url": raw_url, "title": p_title or title, "source": source,
+                        "url": final_url, "raw_url": raw_url, "title": clean_res_title, "source": source,
                         "pub_date": pub_date, "tier": "TIER1_FAST_PATH", "content": md_text, "word_count": words, "status": "SUCCESS",
                     }
 
@@ -650,6 +850,7 @@ class HybridAsyncCrawler:
                 final_url = target_url
                 md_text = ""
                 status = "SUCCESS"
+                tier_label = "TIER2_PLAYWRIGHT"
                 page_title = title
                 context = None
                 page = None
@@ -677,8 +878,8 @@ class HybridAsyncCrawler:
 
                     final_url = page.url
                     raw_t = await page.title()
-                    if raw_t:
-                        page_title = re.sub(r"\s+", " ", html.unescape(raw_t)).strip()
+                    full_page_html = await page.content()
+                    page_title = extract_clean_headline(full_page_html, fallback_title=raw_t or title, source=source)
 
                     css_path, is_def = get_css_selector_for_url(final_url, self.css_paths_map, self.default_css_path, silent=True)
 
@@ -739,7 +940,7 @@ class HybridAsyncCrawler:
                         except Exception: pass
 
                 return {
-                    "url": final_url, "raw_url": raw_url, "title": page_title or title, "source": source,
+                    "url": final_url, "raw_url": raw_url, "title": clean_headline_title(page_title or title, source=source), "source": source,
                     "pub_date": pub_date, "tier": tier_label, "content": md_text if status == "SUCCESS" else "",
                     "word_count": len(md_text.split()) if status == "SUCCESS" else 0, "status": status,
                 }
@@ -837,16 +1038,17 @@ def export_dataset(
         # Mode EACH: 1 artikel = 1 file .md terpisah
         if output_mode in ("each", "both"):
             for idx, it in enumerate(unique_items, 1):
+                clean_it_title = clean_headline_title(it.get("title", ""), source=it.get("source", ""))
                 domain = urlparse(it["url"]).netloc.replace("www.", "")
                 domain_slug = re.sub(r"[^\w\-_\.]", "_", domain).strip("_") or "article"
-                title_slug = re.sub(r"[^\w\s-]", "", it.get("title", "")).strip().lower()
+                title_slug = re.sub(r"[^\w\s-]", "", clean_it_title).strip().lower()
                 title_slug = re.sub(r"[-\s]+", "_", title_slug)[:45].strip("_")
 
                 file_name = f"article_{idx:03d}_{domain_slug}_{title_slug}.md" if title_slug else f"article_{idx:03d}_{domain_slug}.md"
                 file_path = os.path.join(dataset_dir, file_name)
 
                 body = re.sub(r"^#\s+[^\n]+\n+", "", it["content"].strip()) if it["content"].strip().startswith("# ") else it["content"].strip()
-                doc = f"# {it['title']}\n\n{body}\n"
+                doc = f"# {clean_it_title}\n\n{body}\n"
                 with open(file_path, "w", encoding="utf-8") as f:
                     f.write(doc)
             print(f"[OK] {len(unique_items)} file artikel Markdown (1 artikel 1 file .md) disimpan di: {os.path.abspath(dataset_dir)}")
@@ -855,8 +1057,9 @@ def export_dataset(
         if output_mode in ("merge", "both"):
             docs = []
             for it in unique_items:
+                clean_it_title = clean_headline_title(it.get("title", ""), source=it.get("source", ""))
                 body = re.sub(r"^#\s+[^\n]+\n+", "", it["content"].strip()) if it["content"].strip().startswith("# ") else it["content"].strip()
-                docs.append(f"# {it['title']}\n\n{body}")
+                docs.append(f"# {clean_it_title}\n\n{body}")
             with open(merged_md_file, "w", encoding="utf-8") as f:
                 f.write("\n\n---\n\n".join(docs) + "\n")
             print(f"[OK] Dataset Markdown gabungan disimpan ke: {os.path.abspath(merged_md_file)}")
@@ -865,8 +1068,9 @@ def export_dataset(
     if output_format in ("jsonl", "all"):
         with open(jsonl_file, "w", encoding="utf-8") as f:
             for idx, it in enumerate(unique_items, 1):
+                clean_it_title = clean_headline_title(it.get("title", ""), source=it.get("source", ""))
                 rec = {
-                    "id": f"cpt_doc_{idx:05d}", "title": it["title"], "url": it["url"], "source": it["source"],
+                    "id": f"cpt_doc_{idx:05d}", "title": clean_it_title, "url": it["url"], "source": it["source"],
                     "published_at": it.get("pub_date", ""), "tier": it["tier"], "word_count": it["word_count"],
                     "content": it["content"], "crawled_at": datetime.now().isoformat(),
                 }
