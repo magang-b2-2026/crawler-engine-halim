@@ -525,8 +525,40 @@ def batch_decode_google_news_urls(articles: List[Dict[str, str]]) -> List[Dict[s
 # 5. HYBRID TWO-TIER ASYNC CRAWLER (Opsi 1 & Opsi 2)
 # ==============================================================================
 
+async def solve_captcha_via_bot(url: str, solver_url: str, timeout: float = 45.0) -> Optional[str]:
+    """Helper microservice delegator untuk memanggil komdigi-bot guna bypass CAPTCHA/Turnstile."""
+    if not solver_url or not solver_url.strip():
+        return None
+    endpoint = solver_url.strip().rstrip("/")
+    try:
+        async with httpx.AsyncClient(timeout=timeout) as client:
+            r = await client.post(f"{endpoint}/solve", json={"url": url})
+            if r.status_code not in (200, 202):
+                return None
+            job_id = r.json().get("job_id")
+            if not job_id:
+                return None
+
+            t_start = time.time()
+            while time.time() - t_start < timeout:
+                await asyncio.sleep(1.5)
+                poll_r = await client.get(f"{endpoint}/job/{job_id}")
+                if poll_r.status_code == 200:
+                    j_data = poll_r.json()
+                    st = j_data.get("status")
+                    if st == "done":
+                        res = j_data.get("result") or {}
+                        if res.get("status") == "pass":
+                            return res.get("html") or None
+                    elif st == "failed":
+                        break
+    except Exception:
+        pass
+    return None
+
+
 class HybridAsyncCrawler:
-    """Crawler Asinkron Dua Tingkat: Tier 1 (Fast-Path HTTPX) + Tier 2 (Playwright Stealth)."""
+    """Crawler Asinkron Tiga Tingkat: Tier 1 (Fast-Path HTTPX) + Tier 2 (Playwright Stealth) + Tier 3 (komdigi-bot Solver)."""
 
     def __init__(
         self,
@@ -536,6 +568,7 @@ class HybridAsyncCrawler:
         timeout: int = 15,
         min_words: int = 25,
         headless: bool = True,
+        bot_solver_url: str = "",
     ):
         self.css_paths_map = css_paths_map
         self.default_css_path = default_css_path
@@ -544,6 +577,7 @@ class HybridAsyncCrawler:
         self.timeout = timeout
         self.min_words = min_words
         self.headless = headless
+        self.bot_solver_url = bot_solver_url.strip().rstrip("/")
 
         self.http_headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
@@ -673,10 +707,24 @@ class HybridAsyncCrawler:
                     md_text = convert_html_to_markdown(raw_html, url=final_url, title=page_title)
                     worthy, reason = is_cpt_worthy_content(final_url, md_text, min_words=self.min_words, title=page_title)
                     status = "SUCCESS" if worthy else f"FILTERED: {reason}"
+                    tier_label = "TIER2_PLAYWRIGHT"
+
+                    # ---------------- TIER 3: KOMDIGI-BOT DELEGATOR (ON-DEMAND) ----------------
+                    if not worthy and any(w in reason for w in ("WAF", "Bot", "CAPTCHA", "Just a moment")) and self.bot_solver_url:
+                        print(f"[{idx}/{total}] [TIER 3 - BOT SOLVER] Mengirimkan target ke komdigi-bot ({self.bot_solver_url})...")
+                        solved_html = await solve_captcha_via_bot(final_url, self.bot_solver_url, timeout=float(self.timeout * 2))
+                        if solved_html:
+                            solved_md = convert_html_to_markdown(solved_html, url=final_url, title=page_title)
+                            s_worthy, s_reason = is_cpt_worthy_content(final_url, solved_md, min_words=self.min_words, title=page_title)
+                            if s_worthy:
+                                md_text = solved_md
+                                status = "SUCCESS"
+                                tier_label = "TIER3_KOMDIGI_BOT"
+                                print(f"[{idx}/{total}] [TIER 3 SUCCESS] Berhasil bypass proteksi via komdigi-bot ({len(md_text.split())} kata)")
 
                     elapsed_ms = (time.time() - t0) * 1000
                     words = len(md_text.split()) if md_text else 0
-                    tag = "[TIER 2 - PLAYWRIGHT]" if status == "SUCCESS" else "[QUALITY GATE FILTERED]"
+                    tag = f"[{tier_label.replace('_', ' ')}]" if status == "SUCCESS" else "[QUALITY GATE FILTERED]"
                     print(f"[{idx}/{total}] {tag} ({elapsed_ms:.0f}ms | {words} kata) [{source}] {final_url[:70]}...")
 
                 except Exception as e:
@@ -692,7 +740,7 @@ class HybridAsyncCrawler:
 
                 return {
                     "url": final_url, "raw_url": raw_url, "title": page_title or title, "source": source,
-                    "pub_date": pub_date, "tier": "TIER2_PLAYWRIGHT", "content": md_text if status == "SUCCESS" else "",
+                    "pub_date": pub_date, "tier": tier_label, "content": md_text if status == "SUCCESS" else "",
                     "word_count": len(md_text.split()) if status == "SUCCESS" else 0, "status": status,
                 }
             except Exception as outer_e:
@@ -829,6 +877,7 @@ def export_dataset(
     tot_words = sum(it["word_count"] for it in unique_items)
     t1_cnt = sum(1 for it in unique_items if it["tier"] == "TIER1_FAST_PATH")
     t2_cnt = sum(1 for it in unique_items if it["tier"] == "TIER2_PLAYWRIGHT")
+    t3_cnt = sum(1 for it in unique_items if it["tier"] == "TIER3_KOMDIGI_BOT")
 
     with open(log_file, "w", encoding="utf-8") as f:
         f.write(
@@ -839,6 +888,7 @@ def export_dataset(
             f"Total Lolos CPT Bersih: {len(unique_items)} artikel ({tot_words:,} kata)\n"
             f"  - Jalur Tier 1 (Fast-Path) : {t1_cnt} artikel\n"
             f"  - Jalur Tier 2 (Playwright): {t2_cnt} artikel\n"
+            f"  - Jalur Tier 3 (komdigi-bot): {t3_cnt} artikel\n"
             f"Total Duplikat Dieliminasi : {len(duplicate_items)} artikel\n"
             f"Total Ditolak Quality Gate : {len(failed_or_filtered)} artikel\n"
             f"Total Durasi Eksekusi: {total_time_sec:.2f} detik\n\n"
@@ -859,7 +909,7 @@ def export_dataset(
     print("=" * 65)
     print(f"Topik Berita       : {topic or 'URLs'}")
     print(f"Total Diproses     : {len(results)} artikel | Bersih: {len(unique_items)} artikel ({tot_words:,} kata)")
-    print(f"Rasio Jalur        : Fast-Path: {t1_cnt} | Playwright: {t2_cnt}")
+    print(f"Rasio Jalur        : Fast-Path: {t1_cnt} | Playwright: {t2_cnt} | Bot-Solver: {t3_cnt}")
     print(f"Duplikat Dieliminasi: {len(duplicate_items)} | Ditolak: {len(failed_or_filtered)}")
     if total_time_sec > 0:
         print(f"Kecepatan Pipeline : {total_time_sec:.2f} detik ({len(results)/total_time_sec:.2f} artikel/detik)")
@@ -889,6 +939,7 @@ def main():
     parser.add_argument("--min-words", type=int, default=25, help="Minimal kata CPT Gatekeeper. Default: 25")
     parser.add_argument("--timeout", type=int, default=15, help="Timeout per artikel dalam detik. Default: 15")
     parser.add_argument("--headful", action="store_true", help="Jalankan browser terlihat (GUI)")
+    parser.add_argument("--bot-solver-url", default="", help="URL endpoint service komdigi-bot (misal: http://localhost:8080)")
 
     args = parser.parse_args()
     start_time = time.time()
@@ -918,6 +969,7 @@ def main():
     crawler = HybridAsyncCrawler(
         css_paths_map=css_map, default_css_path=args.default_css, concurrency=args.concurrency,
         timeout=args.timeout, min_words=args.min_words, headless=not args.headful,
+        bot_solver_url=args.bot_solver_url,
     )
     results = asyncio.run(crawler.crawl_articles(articles))
     dedup = SemanticDeduplicator(threshold=args.sim_threshold)

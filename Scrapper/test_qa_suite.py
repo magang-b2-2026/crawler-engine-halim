@@ -28,6 +28,7 @@ from Scrapper.pipeline import (
     export_dataset,
     sanitize_cpt_text,
     clean_canonical_url,
+    solve_captcha_via_bot,
 )
 
 
@@ -134,6 +135,12 @@ class TestCPTQualityGate(unittest.TestCase):
     def test_cloudflare_waf_screen_filter(self):
         text = "Just a moment... Enable JavaScript and cookies to continue. Attention Required! | Cloudflare"
         worthy, reason = is_cpt_worthy_content("https://arena.inilah.com/article", text, min_words=5)
+        self.assertFalse(worthy)
+        self.assertIn("WAF", reason)
+
+    def test_modern_cloudflare_verification_screen_filter(self):
+        text = "Performing security verification. This website uses a security service to protect against malicious bots. This page is displayed while the website verifies you are not a bot."
+        worthy, reason = is_cpt_worthy_content("https://ulm.ac.id/article", text, min_words=10, title="Just a moment...")
         self.assertFalse(worthy)
         self.assertIn("WAF", reason)
 
@@ -453,6 +460,14 @@ class TestCPTTextSanitizer(unittest.TestCase):
         self.assertEqual(c1, "https://antaranews.com/berita/12345/judul-berita")
         self.assertEqual(c1, c2)
         self.assertEqual(c2, c3)
+
+
+class TestBotSolverDelegator(unittest.TestCase):
+    def test_solve_captcha_via_bot_offline_graceful_fallback(self):
+        """Memastikan koneksi ke service bot yang offline/gagal menghasilkan None tanpa crash."""
+        import asyncio
+        res = asyncio.run(solve_captcha_via_bot("https://example.com/captcha", "http://127.0.0.1:59999", timeout=1.0))
+        self.assertIsNone(res)
 
 
 if __name__ == "__main__":
