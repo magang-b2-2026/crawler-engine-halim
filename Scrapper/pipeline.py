@@ -171,8 +171,8 @@ def sanitize_cpt_text(text: str, title: str = "") -> str:
         if re.match(r"^\d+\s+(?:kali\s+dibaca|views?|reads?)$", line_str, re.I):
             continue
 
-        # C. Eliminasi metadata author/uploader CMS (misal: "Diposting Oleh : Newsroom Diskominfosantik -")
-        if re.match(r"^(?:\*\*|__)?\s*(?:diposting(?:\s+oleh)?|diterbitkan(?:\s+oleh)?|dipublikasikan(?:\s+pada)?|posted(?:\s+by)?|penulis|reporter|editor|kontributor|redaktur|alih\s+bahasa|rilis|tanggal(?:\s+rilis)?|update)\s*:\s*[^\n]+$", line_str, re.I):
+        # C. Eliminasi metadata author/uploader CMS (misal: "Diposting Oleh : Newsroom Diskominfosantik -", "Pewarta: ...")
+        if re.match(r"^(?:\*\*|__)?\s*(?:diposting(?:\s+oleh)?|diterbitkan(?:\s+oleh)?|dipublikasikan(?:\s+pada)?|posted(?:\s+by)?|penulis|pewarta|reporter|editor|kontributor|redaktur|alih\s+bahasa|rilis|tanggal(?:\s+rilis)?|update)\s*:\s*[^\n]+$", line_str, re.I):
             continue
 
         # D. Eliminasi rubrik/kategori terisolasi (misal: "PENDIDIKAN", "EKONOMI")
@@ -183,20 +183,24 @@ def sanitize_cpt_text(text: str, title: str = "") -> str:
         if re.match(r"^(?:(?:senin|selasa|rabu|kamis|jumat|sabtu|minggu|monday|tuesday|wednesday|thursday|friday|saturday|sunday)[,\s]+)?(?:(?:jan|feb|mar|apr|mei|may|jun|jul|agu|aug|sep|okt|oct|nov|des|dec)[a-z]*|\d{1,2})\s+\d{1,2}[,\s\-]+(?:\d{4})?(?:\s+[-–—|•]\s*)?(?:\s*\d{1,2}:\d{2}(?::\d{2})?(?:\s*(?:wib|wita|wit|gmt|utc))?)?\s*[-–—]?$", line_str, re.I):
             continue
 
-        # F. Eliminasi derau navigasi & CTA sosial media
+        # F. Eliminasi baris dateline terisolasi (misal: "**Jakarta**-", "JAKARTA -")
+        if re.match(r"^(?:\*\*|__)?\s*[A-Za-z\s,\.\-/\(\)]{2,30}?(?:\*\*|__)?\s*[-–—]{1,2}\s*(?:\*\*|__)?$", line_str):
+            continue
+
+        # G. Eliminasi derau navigasi & CTA sosial media
         if re.match(r"^(?:\*\*|__)?\s*(?:baca\s+juga|simak\s+juga|simak\s+video|pilihan\s+editor|artikel\s+ini\s+telah\s+tayang|tonton\s+video|lihat\s+juga|lire\s+l'article\s+complet|read\s+more|baca\s+selengkapnya)\s*:?", line_str, re.I):
             continue
         if re.match(r"^(?:\*\*|__)?\s*(?:dapatkan\s+update\s+berita|ikuti\s+saluran\s+whatsapp|simak\s+berita\s+terbaru\s+di|download\s+aplikasi|klik\s+di\s+sini\s+untuk\s+berlangganan|bergabunglah\s+dengan\s+saluran)", line_str, re.I):
             continue
 
-        # G. Eliminasi caption gambar & kredit foto
+        # H. Eliminasi caption gambar & kredit foto
         if re.search(r"(?:foto|photo|dok(?:umen)?|ilustrasi|sumber\s+foto)\s*:\s*[A-Za-z0-9/\.\s\-\*\_]+$", line_str, re.I) and len(line_str) < 300:
             continue
         if re.match(r"^\(?(?:foto|photo|dok(?:umen)?|ilustrasi)\s*[:/]\s*[^\n\)]+\)?$", line_str, re.I):
             continue
 
-        # H. Eliminasi copyright, disclaimer anti-crawler, dan arsip paywall
-        if re.search(r"(?:dilarang keras mengambil|copyright\s*(?:©|\(c\)|&copy;)|hak cipta dilindungi|all rights reserved|artikel ini telah masuk arsip|artikel ini telah tayang di|crawling atau pengindeksan otomatis untuk ai|simak breaking news)", line_str, re.I):
+        # I. Eliminasi copyright, disclaimer anti-crawler, arsip paywall, dan CTA donasi
+        if re.search(r"(?:dilarang keras mengambil|copyright\s*(?:©|\(c\)|&copy;)|hak cipta dilindungi|all rights reserved|artikel ini telah masuk arsip|artikel ini telah tayang di|crawling atau pengindeksan otomatis untuk ai|simak breaking news|donasi lewat tautan|ekspedisi kata ke nyata|mari bantu sesama|rekening donasi)", line_str, re.I):
             continue
 
         clean_lines.append(line_str)
@@ -219,9 +223,9 @@ def sanitize_cpt_text(text: str, title: str = "") -> str:
 
     text = "\n".join(new_lines)
 
-    # 9. Pembersihan inisial redaksi di akhir teks (misal: (kcm/ard), (dna/dna), (ant/red))
-    text = re.sub(r"\s*\(\s*[a-zA-Z0-9]{2,5}\s*/\s*[a-zA-Z0-9]{2,5}\s*\)\s*$", "", text.strip(), flags=re.I)
-    text = re.sub(r"\s*\(\s*(?:ant|red|tim)\s*\)\s*$", "", text.strip(), flags=re.I)
+    # 9. Pembersihan inisial redaksi di akhir teks (misal: (kcm/ard), **(anl/ega)**, (dna/dna), (ant/red))
+    text = re.sub(r"\s*(?:\*\*|__)?\s*\(\s*[a-zA-Z0-9]{2,5}\s*/\s*[a-zA-Z0-9]{2,5}\s*\)\s*(?:\*\*|__)?\s*$", "", text.strip(), flags=re.I)
+    text = re.sub(r"\s*(?:\*\*|__)?\s*\(\s*(?:ant|red|tim)\s*\)\s*(?:\*\*|__)?\s*$", "", text.strip(), flags=re.I)
 
     # 10. Rasionalisasi spasi dan baris kosong
     text = re.sub(r"[ \t]{2,}", " ", text)
@@ -266,7 +270,8 @@ def convert_html_to_markdown(html_content: str, url: str = "", title: str = "") 
 BLOCK_PHRASES = (
     "attention required! | cloudflare", "just a moment...", "access denied", "403 forbidden",
     "enable javascript and cookies", "security check to access", "sorry, you have been blocked",
-    "error 400 (bad request)", "page not found", "halaman tidak ditemukan",
+    "error 400 (bad request)", "page not found", "halaman tidak ditemukan", "request rejected",
+    "the requested url was rejected", "support id:",
     "baca selengkapnya dengan berlangganan", "konten ini eksklusif untuk pelanggan",
     "silakan login untuk membaca", "berlangganan kompas.id", "anda telah mencapai batas gratis",
 )
@@ -669,13 +674,7 @@ def export_dataset(
                 file_path = os.path.join(dataset_dir, file_name)
 
                 body = re.sub(r"^#\s+[^\n]+\n+", "", it["content"].strip()) if it["content"].strip().startswith("# ") else it["content"].strip()
-                doc = (
-                    f"# {it['title']}\n\n"
-                    f"> **Sumber:** [{it['source']}]({it['url']})\n"
-                    f"> **Tanggal Publikasi:** {it.get('pub_date', '-')}\n"
-                    f"> **Jalur Ekstraksi:** `{it['tier']}` | **Jumlah Kata:** {it['word_count']} kata\n\n"
-                    f"{body}\n"
-                )
+                doc = f"# {it['title']}\n\n{body}\n"
                 with open(file_path, "w", encoding="utf-8") as f:
                     f.write(doc)
             print(f"[OK] {len(unique_items)} file artikel Markdown (1 artikel 1 file .md) disimpan di: {os.path.abspath(dataset_dir)}")
@@ -685,7 +684,7 @@ def export_dataset(
             docs = []
             for it in unique_items:
                 body = re.sub(r"^#\s+[^\n]+\n+", "", it["content"].strip()) if it["content"].strip().startswith("# ") else it["content"].strip()
-                docs.append(f"# {it['title']}\n\n> **Sumber:** [{it['source']}]({it['url']})\n> **Tanggal Publikasi:** {it.get('pub_date', '-')}\n> **Jalur Ekstraksi:** `{it['tier']}` | **Jumlah Kata:** {it['word_count']} kata\n\n{body}")
+                docs.append(f"# {it['title']}\n\n{body}")
             with open(merged_md_file, "w", encoding="utf-8") as f:
                 f.write("\n\n---\n\n".join(docs) + "\n")
             print(f"[OK] Dataset Markdown gabungan disimpan ke: {os.path.abspath(merged_md_file)}")

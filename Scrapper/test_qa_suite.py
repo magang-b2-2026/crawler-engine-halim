@@ -259,6 +259,12 @@ class TestDatasetExporter(unittest.TestCase):
             self.assertTrue(os.path.exists(jsonl_file), "File .jsonl harus terbuat di folder dataset")
             self.assertTrue(os.path.exists(log_file), "File .log harus terbuat di folder dataset")
 
+            with open(os.path.join(dataset_dir, md_files[0]), "r", encoding="utf-8") as f:
+                md_content = f.read()
+                self.assertNotIn("> **Sumber:**", md_content, "File .md CPT harus bebas dari blok metadata Sumber")
+                self.assertNotIn("TIER1_FAST_PATH", md_content, "File .md CPT harus bebas dari kode tier internal")
+                self.assertTrue(md_content.startswith("# Inovasi AI Indonesia"))
+
             with open(jsonl_file, "r", encoding="utf-8") as f:
                 data = json.loads(f.readline())
                 self.assertEqual(data["title"], "Inovasi AI Indonesia")
