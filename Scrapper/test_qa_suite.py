@@ -152,7 +152,7 @@ class TestCPTQualityGate(unittest.TestCase):
         text = "Pemerintah sedang mengkaji aturan baru mengenai perlindungan data pribadi dan kecerdasan buatan. Baca selengkapnya dengan berlangganan harian kompas.id untuk mendapatkan analisis mendalam."
         worthy, reason = is_cpt_worthy_content("https://kompas.id/baca/1", text, min_words=10)
         self.assertFalse(worthy)
-        self.assertIn("WAF / Error screen", reason)
+        self.assertTrue("stub paywall" in reason or "WAF / Error screen" in reason)
 
     def test_non_web_domains(self):
         worthy, reason = is_cpt_worthy_content("https://play.google.com/store/apps/details?id=com.app", "Konten panjang " * 20)
@@ -580,6 +580,48 @@ class TestHeadlineAndEmbedNoiseCleaning(unittest.TestCase):
         cleaned_html = clean_html_embedded_noise(html_sample)
         self.assertNotIn("video20detik", cleaned_html)
         self.assertNotIn("Oscar Motuloh", cleaned_html)
+
+    def test_tempo_dropcap_normalization(self):
+        """Memastikan drop-cap Tempo (**D**UGAAN) dinormalkan menjadi kata utuh (DUGAAN)."""
+        raw = "**D**UGAAN perundungan dan kekerasan terhadap seorang siswa kelas X Sekolah Rakyat Terintegrasi 1 di Kabupaten Pati."
+        cleaned = sanitize_cpt_text(raw)
+        self.assertTrue(cleaned.startswith("DUGAAN perundungan"))
+        self.assertNotIn("**D**", cleaned)
+
+    def test_tempo_paywall_stub_rejection_in_quality_gate(self):
+        """Memastikan artikel berbayar/paywall stub Tempo+ ditolak oleh Quality Gatekeeper."""
+        paywall_text = (
+            "DUGAAN perundungan dan kekerasan terhadap seorang siswa kelas X Sekolah Rakyat Terintegrasi 1 di Kabupaten Pati, "
+            "Jawa Tengah, terjadi pada 29 September 2026. Kementerian Sosial mengatakan telah menerbitkan aturan untuk mencegah "
+            "terjadinya perundungan dalam program prioritas Presiden Prabowo Subianto tersebut.\n\n"
+            "- Akses edisi mingguan dari Tahun 1971\n"
+            "- Akses penuh seluruh artikel Tempo+\n"
+            "- Baca dengan lebih sedikit gangguan iklan\n"
+            "- Fitur baca cepat di edisi Mingguan\n"
+            "- Anda Mendukung Independensi Jurnalisme Tempo\n\n"
+            "Lihat Benefit Lainnya"
+        )
+        worthy, reason = is_cpt_worthy_content("https://www.tempo.co/politik/bisakah-aturan-baru", paywall_text, min_words=25)
+        self.assertFalse(worthy, "Artikel paywall stub Tempo+ harus ditolak oleh Quality Gatekeeper")
+        self.assertIn("paywall", reason.lower())
+
+    def test_tempo_paywall_html_box_decomposed(self):
+        """Memastikan banner paywall Tempo+ (<div class='bg-black...'>) dan dropcap terdecompose dari HTML."""
+        html_tempo = (
+            "<article class='grow'>"
+            "<div id='content-wrapper'>"
+            "<p><span class='tempo-dropcap'><strong>D</strong></span>UGAAN perundungan anak sekolah rakyat.</p>"
+            "</div>"
+            "<div class='bg-black p-6 text-white relative'>"
+            "<span>Berlangganan Tempo+ untuk membaca cerita lengkapnya</span>"
+            "<p>Akses penuh seluruh artikel Tempo+</p>"
+            "</div>"
+            "</article>"
+        )
+        cleaned_html = clean_html_embedded_noise(html_tempo)
+        self.assertNotIn("Berlangganan Tempo+", cleaned_html)
+        self.assertNotIn("bg-black", cleaned_html)
+        self.assertIn("DUGAAN", cleaned_html)
 
 
 class TestBotSolverDelegator(unittest.TestCase):

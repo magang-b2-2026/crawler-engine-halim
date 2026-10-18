@@ -234,18 +234,37 @@ def extract_clean_headline(html_content: str, fallback_title: str = "", source: 
 
 
 def clean_html_embedded_noise(html_content: str) -> str:
-    """Membersihkan kontainer video/multimedia embed dan teaser caption sebelumnya dari struktur DOM."""
+    """Membersihkan kontainer video/multimedia embed, banner paywall, dan menormalisasi drop-cap dari struktur DOM."""
     if not html_content or "<" not in html_content:
         return html_content
     try:
         from bs4 import BeautifulSoup
         soup = BeautifulSoup(html_content, "html.parser")
+        found = False
+
+        # 1. Normalisasi drop-cap (misal: Tempo drop-cap <span class="tempo-dropcap"><strong>D</strong></span>UGAAN)
+        for dc in soup.select(".tempo-dropcap, span[style*='font-size: 4rem'], span[style*='font-size:4rem']"):
+            dc_text = dc.get_text(strip=True)
+            dc.replace_with(dc_text)
+            found = True
+
+        # 2. Pembersihan banner paywall / promosi langganan (misal: Tempo+, Kompas.id)
+        paywall_selectors = [
+            "div[class*='bg-black']", "div:has(> img[src*='paywall'])", ".paywall-content",
+            "div[class*='paywall']", "div[class*='premium-box']"
+        ]
+        for el in soup.select(", ".join(paywall_selectors)):
+            txt_low = el.get_text().lower()
+            if any(w in txt_low for w in ("tempo+", "berlangganan", "benefit", "baca cerita lengkapnya", "kompas.id")):
+                el.decompose()
+                found = True
+
+        # 3. Pembersihan kontainer video/multimedia embed dan teaser caption sebelumnya
         video_selectors = [
             "div.noncontent", "div.video20detik", "a.video20detik", ".embed_video",
             ".video-embed", ".embed-video", "iframe[src*='20.detik.com']",
             "iframe[src*='youtube']", "div[class*='video-box']", "div[class*='detail__video']"
         ]
-        found = False
         for el in soup.select(", ".join(video_selectors)):
             found = True
             prev = el.find_previous_sibling()
@@ -256,6 +275,7 @@ def clean_html_embedded_noise(html_content: str) -> str:
                 if (prev.find(["strong", "b"]) or len(prev_text) < 120) and not prev_text.endswith((".", "!", "?")):
                     prev.decompose()
             el.decompose()
+
         return str(soup) if found else html_content
     except Exception:
         return html_content
@@ -301,6 +321,9 @@ def sanitize_cpt_text(text: str, title: str = "") -> str:
     # 4. Normalisasi tanda petik tunggal tipografi & apostrof ke ASCII 39 (')
     for q in ("‘", "’", "‚", "′", "❛", "❜", "ʻ", "ʼ", "ʹ", "ʽ"):
         text = text.replace(q, "'")
+
+    # 4B. Normalisasi drop-cap terfragmentasi (misal: "**D**UGAAN" -> "DUGAAN")
+    text = re.sub(r"(?:\*\*|__)([A-Za-z])(?:\*\*|__)([A-Za-z]+)", r"\1\2", text)
 
     # 5. Normalisasi dash & hyphen
     text = re.sub(r"(\d+)\s*[–—―‒]\s*(\d+)", r"\1-\2", text)
@@ -378,7 +401,7 @@ def sanitize_cpt_text(text: str, title: str = "") -> str:
             continue
 
         # I. Eliminasi copyright, disclaimer anti-crawler, arsip paywall, dan CTA donasi
-        if re.search(r"(?:dilarang keras mengambil|copyright\s*(?:©|\(c\)|&copy;)|hak cipta dilindungi|all rights reserved|artikel ini telah masuk arsip|artikel ini telah tayang di|crawling atau pengindeksan otomatis untuk ai|simak breaking news|donasi lewat tautan|ekspedisi kata ke nyata|mari bantu sesama|rekening donasi)", line_str, re.I):
+        if re.search(r"(?:dilarang keras mengambil|copyright\s*(?:©|\(c\)|&copy;)|hak cipta dilindungi|all rights reserved|artikel ini telah masuk arsip|artikel ini telah tayang di|crawling atau pengindeksan otomatis untuk ai|simak breaking news|donasi lewat tautan|ekspedisi kata ke nyata|mari bantu sesama|rekening donasi|berlangganan tempo|akses edisi mingguan dari tahun|akses penuh seluruh artikel tempo\+|anda mendukung independensi jurnalisme tempo|lihat benefit lainnya|fitur baca cepat di edisi mingguan|baca cerita lengkapnya)", line_str, re.I):
             continue
 
         # J. Eliminasi hashtag kampanye / slogan / media sosial (misal: "**#SigapMembangunNegeriUntukRakyat**", "#KemenPU")
@@ -552,8 +575,18 @@ BLOCK_PHRASES = (
     "cloudflare ray id", "ray id:",
     "baca selengkapnya dengan berlangganan", "konten ini eksklusif untuk pelanggan",
     "silakan login untuk membaca", "berlangganan kompas.id", "anda telah mencapai batas gratis",
+    "berlangganan tempo+", "berlangganan tempo", "akses penuh seluruh artikel tempo+",
+    "berita tempo plus", "baca cerita lengkapnya", "anda mendukung independensi jurnalisme tempo",
+    "fitur baca cepat di edisi mingguan", "lihat benefit lainnya", "akses edisi mingguan dari tahun",
 )
 BAD_DOMAINS = ("play.google.com", "apps.apple.com", "accounts.google.com", "facebook.com/login")
+
+PAYWALL_MARKERS = (
+    "berlangganan tempo+", "berita tempo plus", "akses edisi mingguan dari tahun",
+    "akses penuh seluruh artikel tempo+", "berlangganan kompas.id", "konten ini eksklusif untuk pelanggan",
+    "baca selengkapnya dengan berlangganan", "silakan login untuk membaca", "anda telah mencapai batas gratis",
+    "lihat benefit lainnya", "anda mendukung independensi jurnalisme tempo", "baca cerita lengkapnya",
+)
 
 
 def is_cpt_worthy_content(url: str, text: str, min_words: int = 25, title: str = "") -> Tuple[bool, str]:
@@ -577,6 +610,11 @@ def is_cpt_worthy_content(url: str, text: str, min_words: int = 25, title: str =
 
     if all(re.match(r"^\d{1,3}(\.\d{1,3}){3}$", line.strip()) for line in cleaned.splitlines() if line.strip()):
         return False, "Deteksi dump alamat IP mentah (bukan artikel informatif)"
+
+    full_low = cleaned.lower()
+    for pm in PAYWALL_MARKERS:
+        if pm in full_low:
+            return False, f"Deteksi stub paywall / konten berbayar terpotong ('{pm}')"
 
     first_800 = cleaned[:800].lower()
     for phrase in BLOCK_PHRASES:
@@ -810,7 +848,7 @@ class HybridAsyncCrawler:
                         return None
 
                     tail = md_content[-250:].lower()
-                    trunc_markers = ("baca selengkapnya", "halaman selanjutnya", "halaman berikutnya", "baca kelanjutannya", "bersambung ke")
+                    trunc_markers = ("baca selengkapnya", "halaman selanjutnya", "halaman berikutnya", "baca kelanjutannya", "bersambung ke", "berlangganan tempo", "tempo+", "baca cerita lengkapnya")
                     if any(tm in tail for tm in trunc_markers):
                         return None
 
