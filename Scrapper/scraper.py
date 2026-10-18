@@ -250,7 +250,10 @@ def save_output(results: List[Dict[str, str]], output_target: str, output_mode: 
 
 def main():
     parser = argparse.ArgumentParser(description="Web Content Scraper (Ponytail Streamlined)")
-    parser.add_argument("--urls", "-u", required=True, help="Path ke file daftar URL")
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument("--urls", "-u", help="Path ke file daftar URL")
+    group.add_argument("--url", help="Satu URL langsung untuk di-scrape")
+
     parser.add_argument("--output", "-o", required=True, help="Path output file/folder hasil scrapping")
     parser.add_argument("--output-mode", choices=["each", "merge"], default="each", help="Mode output ('each' atau 'merge'). Default: each")
     parser.add_argument("--css-path", default="body", help="Default CSS selector. Default: 'body'")
@@ -261,7 +264,12 @@ def main():
     parser.add_argument("--min-words", type=int, default=25, help="Batas minimum kata CPT. Default: 25")
 
     args = parser.parse_args()
-    urls = read_url_list(args.urls)
+    if args.url:
+        urls = [args.url.strip()]
+        print(f"[*] Target uji coba 1 URL langsung: {urls[0]}")
+    else:
+        urls = read_url_list(args.urls)
+
     if not urls:
         print("[!] Tidak ada URL yang valid untuk diproses.")
         sys.exit(0)

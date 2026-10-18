@@ -709,6 +709,7 @@ def main():
     src = parser.add_mutually_exclusive_group(required=True)
     src.add_argument("-t", "--topic", "-q", "--query", help="Topik berita Google News")
     src.add_argument("-u", "--urls", help="Path file teks berisi daftar URL kustom")
+    src.add_argument("--url", help="Satu URL langsung yang ingin diuji/diekstrak")
 
     parser.add_argument("-w", "--when", default="7d", help="Filter waktu kebaruan (1d, 7d, 30d). Default: 7d")
     parser.add_argument("-l", "--limit", type=int, default=30, help="Batas artikel. Default: 30")
@@ -732,6 +733,10 @@ def main():
     if args.topic:
         raw_arts = fetch_google_news_rss(args.topic, when=args.when, limit=args.limit)
         articles = batch_decode_google_news_urls(raw_arts) if raw_arts else []
+    elif args.url:
+        u = args.url.strip()
+        articles = [{"title": "", "link": u, "source": "Single Target URL", "pub_date": "", "decoded_url": u}]
+        print(f"[*] Target uji coba 1 URL langsung: {u}")
     elif args.urls:
         if not os.path.isfile(args.urls):
             print(f"[Error] File '{args.urls}' tidak ditemukan.")
