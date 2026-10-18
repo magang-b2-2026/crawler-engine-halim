@@ -27,6 +27,7 @@ from Scrapper.pipeline import (
     normalize_url_key,
     export_dataset,
     sanitize_cpt_text,
+    clean_canonical_url,
 )
 
 
@@ -438,6 +439,20 @@ class TestCPTTextSanitizer(unittest.TestCase):
         self.assertIn("- Sub poin B1\n\nTahapan implementasi:", clean)
         self.assertIn("2. Tahap eksekusi\n\n> Pernyataan kutipan satu", clean)
         self.assertIn("> Pernyataan kutipan dua\n\nParagraf penutup artikel.", clean)
+
+    def test_clean_canonical_url_tracking_params_purged(self):
+        """Memastikan parameter tracking (utm_*, ref, fbclid) dibersihkan dan www/protokol diseragamkan."""
+        u1 = "https://www.antaranews.com/berita/12345/judul-berita?utm_source=rss&utm_medium=desktop&utm_campaign=main"
+        u2 = "http://antaranews.com/berita/12345/judul-berita/?ref=facebook&fbclid=abcdef"
+        u3 = "https://antaranews.com/berita/12345/judul-berita"
+        
+        c1 = clean_canonical_url(u1)
+        c2 = clean_canonical_url(u2)
+        c3 = clean_canonical_url(u3)
+        
+        self.assertEqual(c1, "https://antaranews.com/berita/12345/judul-berita")
+        self.assertEqual(c1, c2)
+        self.assertEqual(c2, c3)
 
 
 if __name__ == "__main__":

@@ -53,6 +53,26 @@ def normalize_url_key(url_str: str) -> str:
     return url_str.strip().split("://")[-1].rstrip("/").lower()
 
 
+def clean_canonical_url(url: str) -> str:
+    """Membersihkan URL dari parameter tracking (utm_*, ref, fbclid) dan menormalisasi skema untuk deduplikasi kanonikal."""
+    if not url or not url.strip():
+        return ""
+    try:
+        parsed = urlparse(url.strip())
+        q_params = urllib.parse.parse_qsl(parsed.query)
+        clean_params = [
+            (k, v) for k, v in q_params
+            if not k.lower().startswith("utm_")
+            and k.lower() not in ("ref", "ref_src", "fbclid", "gclid", "amp", "preview", "_gl", "source")
+        ]
+        new_query = urllib.parse.urlencode(clean_params)
+        clean_netloc = parsed.netloc.lower().removeprefix("www.")
+        clean_path = parsed.path.rstrip("/")
+        return urllib.parse.urlunparse(("https", clean_netloc, clean_path, "", new_query, ""))
+    except Exception:
+        return url.strip()
+
+
 def load_css_paths(csv_file_path: str) -> Dict[str, str]:
     """Membaca pemetaan domain/URL ke css_path dari CSV (separator ';' atau ',')."""
     if not os.path.isfile(csv_file_path):
@@ -330,17 +350,25 @@ BLOCK_PHRASES = (
     "enable javascript and cookies", "security check to access", "sorry, you have been blocked",
     "error 400 (bad request)", "page not found", "halaman tidak ditemukan", "request rejected",
     "the requested url was rejected", "support id:",
+    "performing security verification", "uses a security service to protect against",
+    "verifies you are not a bot", "verify you are human", "checking your browser",
+    "cloudflare ray id", "ray id:",
     "baca selengkapnya dengan berlangganan", "konten ini eksklusif untuk pelanggan",
     "silakan login untuk membaca", "berlangganan kompas.id", "anda telah mencapai batas gratis",
 )
 BAD_DOMAINS = ("play.google.com", "apps.apple.com", "accounts.google.com", "facebook.com/login")
 
 
-def is_cpt_worthy_content(url: str, text: str, min_words: int = 25) -> Tuple[bool, str]:
+def is_cpt_worthy_content(url: str, text: str, min_words: int = 25, title: str = "") -> Tuple[bool, str]:
     """Mengevaluasi apakah teks hasil ekstraksi memenuhi standar CPT."""
     domain = urlparse(url).netloc.lower()
     if any(bd in domain for bd in BAD_DOMAINS):
         return False, f"Bukan artikel/dokumen web ({domain})"
+
+    if title:
+        t_low = title.lower()
+        if any(bp in t_low for bp in ("just a moment...", "attention required", "security check", "403 forbidden", "access denied")):
+            return False, f"Deteksi judul halaman proteksi WAF/Bot ('{title}')"
 
     cleaned = text.strip()
     if not cleaned:
@@ -411,32 +439,54 @@ class SemanticDeduplicator:
 # ==============================================================================
 
 def fetch_google_news_rss(query: str, when: str = "7d", limit: int = 30) -> List[Dict[str, str]]:
-    """Mengambil daftar artikel berita terverifikasi dari endpoint RSS Google News."""
-    clean_q = f"{query.strip()} when:{when}" if when else query.strip()
-    rss_url = f"https://news.google.com/rss/search?q={urllib.parse.quote_plus(clean_q)}&hl=id&gl=ID&ceid=ID:id"
-    print(f"[*] Menghubungi Google News RSS: {rss_url}")
-
-    try:
-        resp = httpx.get(rss_url, headers={"User-Agent": "Mozilla/5.0"}, timeout=20)
-        items = ET.fromstring(resp.content).findall(".//item")
-        print(f"[*] Ditemukan {len(items)} artikel di feed Google News.")
-        return [
-            {
-                "title": (it.findtext("title") or "").strip(),
-                "link": (it.findtext("link") or "").strip(),
-                "source": (it.findtext("source") or "Media Nasional").strip(),
-                "pub_date": (it.findtext("pubDate") or "").strip(),
-                "decoded_url": "",
-            }
-            for it in items[:limit] if it.findtext("link")
+    """Mengambil daftar artikel berita terverifikasi dari endpoint RSS Google News.
+    Mendukung multi-query koma (misal: 'query1, query2') atau auto-ekspansi jika limit > 100."""
+    queries = [q.strip() for q in query.split(",") if q.strip()]
+    if limit > 100 and len(queries) == 1:
+        base = queries[0]
+        queries = [
+            base,
+            f"{base} terintegrasi",
+            f"{base} kemiskinan",
+            f"{base} dinsos",
+            f"{base} pemkab",
+            f"{base} indonesia",
         ]
-    except Exception as e:
-        print(f"[!] Gagal mengambil Google News RSS: {e}")
-        return []
+
+    raw_articles: List[Dict[str, str]] = []
+    seen_raw_links: Set[str] = set()
+
+    for q in queries:
+        if len(raw_articles) >= limit:
+            break
+        clean_q = f"{q} when:{when}" if when else q
+        rss_url = f"https://news.google.com/rss/search?q={urllib.parse.quote_plus(clean_q)}&hl=id&gl=ID&ceid=ID:id"
+        print(f"[*] Menghubungi Google News RSS ('{q}'): {rss_url}")
+        try:
+            resp = httpx.get(rss_url, headers={"User-Agent": "Mozilla/5.0"}, timeout=20)
+            items = ET.fromstring(resp.content).findall(".//item")
+            print(f"[*] Ditemukan {len(items)} artikel di feed Google News untuk '{q}'.")
+            for it in items:
+                link = (it.findtext("link") or "").strip()
+                if link and link not in seen_raw_links:
+                    seen_raw_links.add(link)
+                    raw_articles.append({
+                        "title": (it.findtext("title") or "").strip(),
+                        "link": link,
+                        "source": (it.findtext("source") or "Media Nasional").strip(),
+                        "pub_date": (it.findtext("pubDate") or "").strip(),
+                        "decoded_url": "",
+                    })
+                    if len(raw_articles) >= limit:
+                        break
+        except Exception as e:
+            print(f"[!] Gagal mengambil Google News RSS '{q}': {e}")
+
+    return raw_articles[:limit]
 
 
 def batch_decode_google_news_urls(articles: List[Dict[str, str]]) -> List[Dict[str, str]]:
-    """Mendekode token URL Google News RSS ke URL asli penerbit."""
+    """Mendekode token URL Google News RSS ke URL asli penerbit dan membuang URL kanonikal duplikat sebelum crawl."""
     if not articles:
         return articles
 
@@ -452,7 +502,23 @@ def batch_decode_google_news_urls(articles: List[Dict[str, str]]) -> List[Dict[s
         print(f"[!] Info decoder: {e}")
         for a in articles:
             a["decoded_url"] = a["link"]
-    return articles
+
+    # Pre-crawl Canonical URL Deduplication
+    unique_articles = []
+    seen_canonical: Set[str] = set()
+    for a in articles:
+        target = a.get("decoded_url") or a.get("link", "")
+        can = clean_canonical_url(target)
+        if can and can not in seen_canonical:
+            seen_canonical.add(can)
+            a["canonical_url"] = can
+            unique_articles.append(a)
+
+    dups_count = len(articles) - len(unique_articles)
+    if dups_count > 0:
+        print(f"[DEDUP] {dups_count} URL duplikat/tracking berhasil dieliminasi sebelum proses crawling.")
+
+    return unique_articles
 
 
 # ==============================================================================
@@ -503,7 +569,7 @@ class HybridAsyncCrawler:
                 title_m = re.search(r"<title[^>]*>(.*?)</title>", resp.text, re.I | re.S)
                 title = re.sub(r"\s+", " ", html.unescape(title_m.group(1))).strip() if title_m else ""
                 md_content = convert_html_to_markdown(resp.text, url=final_url, title=title)
-                worthy, _ = is_cpt_worthy_content(final_url, md_content, min_words=self.min_words)
+                worthy, _ = is_cpt_worthy_content(final_url, md_content, min_words=self.min_words, title=title)
                 if worthy:
                     # Deteksi konten terpotong / Unhydrated SPA Mismatch (Auto-fallback ke Tier 2)
                     words = md_content.split()
@@ -605,7 +671,7 @@ class HybridAsyncCrawler:
                         raw_html = await _extract_html()
 
                     md_text = convert_html_to_markdown(raw_html, url=final_url, title=page_title)
-                    worthy, reason = is_cpt_worthy_content(final_url, md_text, min_words=self.min_words)
+                    worthy, reason = is_cpt_worthy_content(final_url, md_text, min_words=self.min_words, title=page_title)
                     status = "SUCCESS" if worthy else f"FILTERED: {reason}"
 
                     elapsed_ms = (time.time() - t0) * 1000
