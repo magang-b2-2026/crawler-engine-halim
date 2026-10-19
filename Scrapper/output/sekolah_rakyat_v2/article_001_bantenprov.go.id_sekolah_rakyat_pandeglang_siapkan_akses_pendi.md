@@ -7,17 +7,3 @@ Warga sedulur Banten, Sekolah Rakyat Provinsi Banten di Kabupaten Pandeglang ter
 ✅ Banten Raih Penghargaan Creative Financing 2026 dari Kemendagri
 
 ✅ Gubernur Bnaten pimpin Dewan Sumber Daya Air Provinsi Banten 2026-2030, dan informasi lainnya.
-
-....................................
-
-Informasi seputar Pemprov Banten bisa diakses melalui:
-
-🌐 Website: bantenprov.go.id
-
-X @banten\_pemprov
-
-📘 Facebook: facebook.com/bantenpemprov
-
-🎵 TikTok: @pemprovbanten
-
-📧 Email: pemerintahprovinsibanten@bantenprov.go.id

@@ -284,7 +284,9 @@ def clean_html_embedded_noise(html_content: str) -> str:
             "div[class*='sidebar-right']", "div[class*='sidebar-left']", "div.widget", "div.widget-area",
             "div.baca-juga", "div.berita-terkait", "div.berita-terbaru", "div.related-articles", "div.related-news",
             "div.popular-posts", "div.trending-news", "div.comments-area", "div.comment-respond", "#comments",
-            "div.discussion-section", "section.comments", "div.social-share", "div.share-box", "div.post-share"
+            "div.discussion-section", "section.comments", "div.social-share", "div.share-box", "div.post-share",
+            "div.social-links", "ul.social-media", "div.contact-info", "div.info-pemprov", "div.footer-contact",
+            "div.share-links", "div.kontak-kami"
         ]
         for el in soup.select(", ".join(structural_noise)):
             el.decompose()
@@ -376,10 +378,14 @@ def sanitize_cpt_text(text: str, title: str = "") -> str:
         ):
             continue
 
-        # Deteksi pemisah bagian penutup (Berita Terkait, Berita Terbaru, Rekomendasi, Diskusi, Komentar)
-        # Ketika bagian ini muncul, sisa teks ke bawah adalah widget dan harus dipotong (truncate).
+        # A. Eliminasi garis pemisah terisolasi atau baris titik-titik (misal: "....................................", "-------------------")
+        if re.match(r"^[.\-_*=~]{3,}$", line_str):
+            continue
+
+        # Deteksi pemisah bagian penutup (Berita Terkait, Berita Terbaru, Rekomendasi, Diskusi, Komentar, Kontak Medsos)
+        # Ketika bagian ini muncul, sisa teks ke bawah adalah widget/kontak dan harus dipotong (truncate).
         if re.match(
-            r"^(?:#+\s*)?(?:berita\s+terbaru|berita\s+terkait|artikel\s+terkait|baca\s+juga\s*:?$|baca\s+artikel\s+lainnya|rekomendasi\s+berita|berita\s+populer|terpopuler|trending\s+topic|pilihan\s+editor|related\s+news|latest\s+news|discussion(?:\s+about\s+this\s+post)?|komentar(?:\s+pembaca)?|\d+\s+komentar|tulis\s+komentar|kirim\s+komentar)\s*:?$",
+            r"^(?:#+\s*)?(?:berita\s+terbaru|berita\s+terkait|artikel\s+terkait|baca\s+juga\s*:?$|baca\s+artikel\s+lainnya|rekomendasi\s+berita|berita\s+populer|terpopuler|trending\s+topic|pilihan\s+editor|related\s+news|latest\s+news|discussion(?:\s+about\s+this\s+post)?|komentar(?:\s+pembaca)?|\d+\s+komentar|tulis\s+komentar|kirim\s+komentar|informasi\s+(?:seputar|terkait|lebih\s+lanjut)\s+.*?\s+(?:bisa|dapat)\s+diakses(?:\s+melalui)?|dapat\s+diakses\s+melalui|informasi\s+selengkapnya\s+dapat\s+diakses|ikuti\s+media\s+sosial\s+kami|kontak\s+dan\s+media\s+sosial|hubungi\s+kami\s+melalui|saluran\s+resmi\s+kami)\s*:?$",
             line_str,
             re.I,
         ):
@@ -447,8 +453,8 @@ def sanitize_cpt_text(text: str, title: str = "") -> str:
         if re.match(r"^(?:\*\*|__)?\s*#[A-Za-z0-9_]{3,}(?:\s+#[A-Za-z0-9_]{3,})*\s*(?:\*\*|__)?$", line_str):
             continue
 
-        # K. Eliminasi daftar kontak media sosial resmi (misal: "Website: pu.go.id", "Instagram: kementerianpu")
-        if re.match(r"^(?:\*\*|__)?\s*(?:website|situs|facebook|instagram|x|twitter|tiktok|youtube|threads|telegram|linkedin|email|e-mail)\s*:\s*[^\n]+$", line_str, re.I):
+        # K. Eliminasi daftar kontak media sosial resmi dengan/tanpa emoji (misal: "🌐 Website: pu.go.id", "📘 Facebook: ...", "X @banten_pemprov", "🎵 TikTok: @...")
+        if re.match(r"^(?:[^\w\s]\s*)?(?:\*\*|__)?\s*(?:website|situs|facebook|fb|instagram|ig|x|twitter|tiktok|youtube|yt|threads|telegram|linkedin|email|e-mail)\s*[:@\s]\s*[^\n]+$", line_str, re.I):
             continue
 
         # L. Eliminasi baris emoji terisolasi (misal: "💡", "▶️", "👉")
@@ -457,6 +463,11 @@ def sanitize_cpt_text(text: str, title: str = "") -> str:
 
         # M. Eliminasi baris teaser video / multimedia (misal: "💡 **...**", "▶️ **...**", "**Simak Video...**", "**Tonton Video...**")
         if re.match(r"^(?:\*\*|__)?\s*(?:💡|▶️|video\s*:|simak\s+video|tonton\s+video|saksikan\s+video)", line_str, re.I):
+            continue
+
+        # Eliminasi kalimat ajakan tonton YouTube/video di akhir narasi
+        line_str = re.sub(r"(?:saksikan|tonton|simak)\s+(?:selengkapnya|video)\s+(?:hanya\s+)?di\s+(?:youtube|yt|saluran)\s+[^\n]+", "", line_str, flags=re.I).strip()
+        if not line_str:
             continue
 
         clean_lines.append(line_str)

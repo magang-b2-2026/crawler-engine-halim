@@ -6,18 +6,4 @@ Warga sedulur Banten, pendidikan tidak boleh berhenti karena keterbatasan biaya.
 
 ✅ Wagub Banten apresiasi Polda Banten salurkan air bersih untuk warga terdampak kekeringan
 
-✅ Pemprov Banten gelar Program CKG Jemput Bola, dan informasi lainnya. Saksikan selengkapnya hanya di Youtube Pemerintah Provinsi Banten: https://youtu.be/QetbDIdDiak
-
-....................................
-
-Informasi seputar Pemprov Banten bisa diakses melalui:
-
-🌐 Website: bantenprov.go.id
-
-X @banten\_pemprov
-
-📘 Facebook: facebook.com/bantenpemprov
-
-🎵 TikTok: @pemprovbanten
-
-📧 Email: pemerintahprovinsibanten@bantenprov.go.id
+✅ Pemprov Banten gelar Program CKG Jemput Bola, dan informasi lainnya.

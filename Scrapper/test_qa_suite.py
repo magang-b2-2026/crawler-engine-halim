@@ -693,6 +693,29 @@ class TestHeadlineAndEmbedNoiseCleaning(unittest.TestCase):
         self.assertNotIn("Install aplikasi", cleaned)
         self.assertIn("Pemerintah terus memperluas", cleaned)
 
+    def test_government_contact_and_social_media_truncated(self):
+        """Memastikan blok kontak medsos pemerintah (website, fb, tiktok, email) dan titik-titik terpotong bersih."""
+        raw_banten = (
+            "Warga sedulur Banten, Sekolah Rakyat Provinsi Banten terus menunjukkan progres positif.\n\n"
+            "Pembangunan telah mencapai 67 persen dan ditargetkan selesai akhir bulan.\n\n"
+            "....................................\n\n"
+            "Informasi seputar Pemprov Banten bisa diakses melalui:\n\n"
+            "🌐 Website: bantenprov.go.id\n\n"
+            "X @banten_pemprov\n\n"
+            "📘 Facebook: facebook.com/bantenpemprov\n\n"
+            "🎵 TikTok: @pemprovbanten\n\n"
+            "📧 Email: pemerintahprovinsibanten@bantenprov.go.id\n"
+        )
+        cleaned = sanitize_cpt_text(raw_banten)
+        self.assertNotIn("Informasi seputar Pemprov Banten", cleaned)
+        self.assertNotIn("bantenprov.go.id", cleaned)
+        self.assertNotIn("@banten_pemprov", cleaned)
+        self.assertNotIn("facebook.com", cleaned)
+        self.assertNotIn("@pemprovbanten", cleaned)
+        self.assertNotIn("pemerintahprovinsibanten@", cleaned)
+        self.assertNotIn(".......", cleaned)
+        self.assertIn("Warga sedulur Banten, Sekolah Rakyat Provinsi Banten", cleaned)
+
 
 class TestBotSolverDelegator(unittest.TestCase):
     def test_solve_captcha_via_bot_offline_graceful_fallback(self):
