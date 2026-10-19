@@ -276,6 +276,20 @@ def clean_html_embedded_noise(html_content: str) -> str:
                     prev.decompose()
             el.decompose()
 
+        # 4. Pembersihan header, footer, navigasi, sidebar, dan widget rekomendasi/komentar
+        structural_noise = [
+            "body > header", "header#header", "header.site-header", "header.main-header", "div.main-header",
+            "ul.main-header__top-details-list", "div.top-bar", "div.information__content",
+            "footer", "nav", "aside", ".sidebar", "div.sidebar", "div.sidebar__single", "div.sidebar__comments",
+            "div[class*='sidebar-right']", "div[class*='sidebar-left']", "div.widget", "div.widget-area",
+            "div.baca-juga", "div.berita-terkait", "div.berita-terbaru", "div.related-articles", "div.related-news",
+            "div.popular-posts", "div.trending-news", "div.comments-area", "div.comment-respond", "#comments",
+            "div.discussion-section", "section.comments", "div.social-share", "div.share-box", "div.post-share"
+        ]
+        for el in soup.select(", ".join(structural_noise)):
+            el.decompose()
+            found = True
+
         return str(soup) if found else html_content
     except Exception:
         return html_content
@@ -362,6 +376,31 @@ def sanitize_cpt_text(text: str, title: str = "") -> str:
         ):
             continue
 
+        # Deteksi pemisah bagian penutup (Berita Terkait, Berita Terbaru, Rekomendasi, Diskusi, Komentar)
+        # Ketika bagian ini muncul, sisa teks ke bawah adalah widget dan harus dipotong (truncate).
+        if re.match(
+            r"^(?:#+\s*)?(?:berita\s+terbaru|berita\s+terkait|artikel\s+terkait|baca\s+juga\s*:?$|baca\s+artikel\s+lainnya|rekomendasi\s+berita|berita\s+populer|terpopuler|trending\s+topic|pilihan\s+editor|related\s+news|latest\s+news|discussion(?:\s+about\s+this\s+post)?|komentar(?:\s+pembaca)?|\d+\s+komentar|tulis\s+komentar|kirim\s+komentar)\s*:?$",
+            line_str,
+            re.I,
+        ):
+            break
+
+        # Eliminasi heading/baris identitas instansi, balai kota, kantor bupati, gedung pemerintahan, atau navigasi portal
+        if re.match(
+            r"^(?:#+\s*)?(?:balai\s+kota|kantor\s+bupati|sekretariat\s+daerah|komplek\s+perkantoran|gedung\s+[A-Za-z0-9\s]+lantai|informasi|ikuti\s+kami|bimas|kontak\s+kami)\s*[A-Za-z0-9\s]*$",
+            line_str,
+            re.I,
+        ) and len(line_str) < 80:
+            continue
+
+        # Eliminasi baris alamat jalan & nomor kantor di header/footer
+        if re.match(r"^(?:jl\.|jalan)\s+[A-Za-z0-9\s\.\,\-]+(?:no\.\s*\d+|nomor\s*\d+|rt\s*\d+|rw\s*\d+|\d{5})", line_str, re.I) and len(line_str) < 120:
+            continue
+
+        # Eliminasi nomor telepon/fax/email kantor terisolasi
+        if re.match(r"^(?:telepon|telp|fax|e-?mail)\s*:\s*.*$", line_str, re.I):
+            continue
+
         if line_str.startswith("#"):
             clean_lines.append(line_str)
             continue
@@ -391,7 +430,7 @@ def sanitize_cpt_text(text: str, title: str = "") -> str:
         # G. Eliminasi derau navigasi & CTA sosial media
         if re.match(r"^(?:\*\*|__)?\s*(?:baca\s+juga|simak\s+juga|simak\s+video|pilihan\s+editor|artikel\s+ini\s+telah\s+tayang|tonton\s+video|lihat\s+juga|lire\s+l'article\s+complet|read\s+more|baca\s+selengkapnya)\s*:?", line_str, re.I):
             continue
-        if re.match(r"^(?:\*\*|__)?\s*(?:dapatkan\s+update\s+berita|ikuti\s+saluran\s+whatsapp|simak\s+berita\s+terbaru\s+di|download\s+aplikasi|klik\s+di\s+sini\s+untuk\s+berlangganan|bergabunglah\s+dengan\s+saluran)", line_str, re.I):
+        if re.match(r"^(?:\*\*|__)?\s*(?:dapatkan\s+update\s+berita|ikuti\s+saluran\s+whatsapp|simak\s+berita\s+terbaru\s+di|(?:install|unduh|download)\s+aplikasi|klik\s+di\s+sini\s+untuk\s+berlangganan|bergabunglah\s+dengan\s+saluran|bagikan\s+pemikiran|kirim\s+komentar)", line_str, re.I):
             continue
 
         # H. Eliminasi caption gambar & kredit foto
@@ -400,8 +439,8 @@ def sanitize_cpt_text(text: str, title: str = "") -> str:
         if re.match(r"^\(?(?:foto|photo|dok(?:umen)?|ilustrasi)\s*[:/]\s*[^\n\)]+\)?$", line_str, re.I):
             continue
 
-        # I. Eliminasi copyright, disclaimer anti-crawler, arsip paywall, dan CTA donasi
-        if re.search(r"(?:dilarang keras mengambil|copyright\s*(?:©|\(c\)|&copy;)|hak cipta dilindungi|all rights reserved|artikel ini telah masuk arsip|artikel ini telah tayang di|crawling atau pengindeksan otomatis untuk ai|simak breaking news|donasi lewat tautan|ekspedisi kata ke nyata|mari bantu sesama|rekening donasi|berlangganan tempo|akses edisi mingguan dari tahun|akses penuh seluruh artikel tempo\+|anda mendukung independensi jurnalisme tempo|lihat benefit lainnya|fitur baca cepat di edisi mingguan|baca cerita lengkapnya)", line_str, re.I):
+        # I. Eliminasi copyright, disclaimer anti-crawler, arsip paywall, sindikasi, dan CTA donasi
+        if re.search(r"(?:dilarang keras mengambil|copyright\s*(?:©|\(c\)|&copy;)|hak cipta dilindungi|all rights reserved|artikel ini telah masuk arsip|(?:berita|artikel|konten)\s+ini\s+telah\s+(?:tayang|terbit|dimuat)\s+di|crawling atau pengindeksan otomatis untuk ai|simak breaking news|donasi lewat tautan|ekspedisi kata ke nyata|mari bantu sesama|rekening donasi|berlangganan tempo|akses edisi mingguan dari tahun|akses penuh seluruh artikel tempo\+|anda mendukung independensi jurnalisme tempo|lihat benefit lainnya|fitur baca cepat di edisi mingguan|baca cerita lengkapnya|(?:install|unduh|download)\s+aplikasi|bagikan\s+pemikiran|kirim\s+komentar)", line_str, re.I):
             continue
 
         # J. Eliminasi hashtag kampanye / slogan / media sosial (misal: "**#SigapMembangunNegeriUntukRakyat**", "#KemenPU")
@@ -572,7 +611,8 @@ BLOCK_PHRASES = (
     "the requested url was rejected", "support id:",
     "performing security verification", "uses a security service to protect against",
     "verifies you are not a bot", "verify you are human", "checking your browser",
-    "cloudflare ray id", "ray id:",
+    "cloudflare ray id", "ray id:", "laman tidak bisa ditampilkan", "tidak dibolehkan diakses",
+    "attack id:", "laman tidak diizinkan",
     "baca selengkapnya dengan berlangganan", "konten ini eksklusif untuk pelanggan",
     "silakan login untuk membaca", "berlangganan kompas.id", "anda telah mencapai batas gratis",
     "berlangganan tempo+", "berlangganan tempo", "akses penuh seluruh artikel tempo+",
@@ -597,7 +637,7 @@ def is_cpt_worthy_content(url: str, text: str, min_words: int = 25, title: str =
 
     if title:
         t_low = title.lower()
-        if any(bp in t_low for bp in ("just a moment...", "attention required", "security check", "403 forbidden", "access denied")):
+        if any(bp in t_low for bp in ("just a moment...", "attention required", "security check", "403 forbidden", "access denied", "laman tidak")):
             return False, f"Deteksi judul halaman proteksi WAF/Bot ('{title}')"
 
     cleaned = text.strip()
@@ -607,6 +647,13 @@ def is_cpt_worthy_content(url: str, text: str, min_words: int = 25, title: str =
     words = cleaned.split()
     if len(words) < min_words:
         return False, f"Teks terlalu pendek ({len(words)} kata < batas minimal {min_words} kata)"
+
+    # Hitung kata narasi murni tanpa sintaks gambar markdown (![alt](url)) dan heading
+    prose_text = re.sub(r"!\[[^\]]*\]\([^\)]+\)", " ", cleaned)
+    prose_text = re.sub(r"^#+[^\n]+", " ", prose_text, flags=re.M)
+    prose_words = prose_text.split()
+    if len(prose_words) < min_words:
+        return False, f"Teks narasi terlalu pendek ({len(prose_words)} kata narasi < batas minimal {min_words} kata)"
 
     if all(re.match(r"^\d{1,3}(\.\d{1,3}){3}$", line.strip()) for line in cleaned.splitlines() if line.strip()):
         return False, "Deteksi dump alamat IP mentah (bukan artikel informatif)"
@@ -627,6 +674,14 @@ def is_cpt_worthy_content(url: str, text: str, min_words: int = 25, title: str =
             return False, "Deteksi stub paywall / konten berbayar (Schema.org isAccessibleForFree: false)"
         if any(w in h_low for w in ('class="bg-black', 'class="paywall', 'id="paywall')) and any(w in h_low for w in ('tempo+', 'berlangganan kompas.id')) and len(words) < 200:
             return False, "Deteksi stub paywall terpotong dari kontainer berlangganan"
+
+    # Deteksi dump menu navigasi / daftar hyperlink (bukan artikel narasi)
+    lines_non_empty = [l.strip() for l in cleaned.splitlines() if l.strip()]
+    if lines_non_empty:
+        bullet_lines = [l for l in lines_non_empty if l.startswith(("* ", "+ ", "- ", "• "))]
+        avg_words = len(words) / len(lines_non_empty)
+        if len(lines_non_empty) >= 6 and (len(bullet_lines) / len(lines_non_empty) > 0.40) and avg_words < 12:
+            return False, f"Deteksi dump menu navigasi/daftar link ({len(bullet_lines)}/{len(lines_non_empty)} baris poin)"
 
     return True, "Valid CPT"
 
@@ -837,7 +892,7 @@ class HybridAsyncCrawler:
 
     async def _fetch_tier1_fastpath(
         self, client: httpx.AsyncClient, url: str, fallback_title: str = "", source: str = ""
-    ) -> Optional[Tuple[str, str, str]]:
+    ) -> Optional[Tuple[str, str, str, str]]:
         if "google.com" in url:
             return None
         try:
@@ -846,23 +901,162 @@ class HybridAsyncCrawler:
                 final_url = str(resp.url)
                 title = extract_clean_headline(resp.text, fallback_title=fallback_title, source=source)
                 md_content = convert_html_to_markdown(resp.text, url=final_url, title=title)
-                worthy, _ = is_cpt_worthy_content(final_url, md_content, min_words=self.min_words, title=title, raw_html=resp.text)
+                worthy, reason = is_cpt_worthy_content(final_url, md_content, min_words=self.min_words, title=title, raw_html=resp.text)
+
+                # Deteksi konten terpotong / Unhydrated SPA Mismatch (Auto-fallback ke Tier 2)
+                words = len(md_content.split())
+                spa_markers = ("__NEXT_DATA__", "window.__INITIAL_STATE__", "__NUXT__", "window.__remixContext", "__next_f", 'id="__next"')
+                has_spa = any(m in resp.text for m in spa_markers) and words < 120
+
+                tail = md_content[-250:].lower()
+                trunc_markers = ("baca selengkapnya", "halaman selanjutnya", "halaman berikutnya", "baca kelanjutannya", "bersambung ke", "berlangganan tempo", "tempo+", "baca cerita lengkapnya")
+                has_trunc = any(tm in tail for tm in trunc_markers)
+
+                if has_spa or has_trunc:
+                    return None
+
                 if worthy:
-                    # Deteksi konten terpotong / Unhydrated SPA Mismatch (Auto-fallback ke Tier 2)
-                    words = md_content.split()
-                    spa_markers = ("__NEXT_DATA__", "window.__INITIAL_STATE__", "__NUXT__", "window.__remixContext")
-                    if any(m in resp.text for m in spa_markers) and len(words) < 120:
-                        return None
-
-                    tail = md_content[-250:].lower()
-                    trunc_markers = ("baca selengkapnya", "halaman selanjutnya", "halaman berikutnya", "baca kelanjutannya", "bersambung ke", "berlangganan tempo", "tempo+", "baca cerita lengkapnya")
-                    if any(tm in tail for tm in trunc_markers):
-                        return None
-
-                    return final_url, md_content, title
+                    return final_url, md_content, title, "SUCCESS"
+                else:
+                    return final_url, "", title, f"FILTERED: {reason}"
         except Exception:
             pass
         return None
+
+    async def _crawl_single_article_worker(
+        self, article: Dict[str, str], client: httpx.AsyncClient, playwright_browser, idx: int, total: int
+    ) -> Dict:
+        target_url = article.get("decoded_url") or article.get("link", "")
+        raw_url = article.get("link", "")
+        source = article.get("source", "Media")
+        raw_title = article.get("title", "")
+        title = clean_headline_title(raw_title, source=source)
+        pub_date = article.get("pub_date", "")
+
+        # ---------------- TIER 1: FAST-PATH ----------------
+        t0 = time.time()
+        tier1_res = await self._fetch_tier1_fastpath(client, target_url, fallback_title=title, source=source)
+        if tier1_res:
+            final_url, md_text, p_title, t1_status = tier1_res
+            clean_res_title = clean_headline_title(p_title or title, source=source)
+            elapsed_ms = (time.time() - t0) * 1000
+            words = len(md_text.split()) if md_text else 0
+            if t1_status == "SUCCESS":
+                print(f"[{idx}/{total}] [TIER 1 - FAST PATH] ({elapsed_ms:.0f}ms | {words} kata) [{source}] {target_url[:75]}...")
+                return {
+                    "url": final_url, "raw_url": raw_url, "title": clean_res_title, "source": source,
+                    "pub_date": pub_date, "tier": "TIER1_FAST_PATH", "content": md_text, "word_count": words, "status": "SUCCESS",
+                }
+            else:
+                print(f"[{idx}/{total}] [QUALITY GATE FILTERED] ({elapsed_ms:.0f}ms | {words} kata) [{source}] {target_url[:75]}...")
+                return {
+                    "url": final_url, "raw_url": raw_url, "title": clean_res_title, "source": source,
+                    "pub_date": pub_date, "tier": "TIER1_FAST_PATH", "content": "", "word_count": 0, "status": t1_status,
+                }
+
+        # ---------------- TIER 2: PLAYWRIGHT FALLBACK ----------------
+        t0 = time.time()
+        final_url = target_url
+        md_text = ""
+        status = "SUCCESS"
+        tier_label = "TIER2_PLAYWRIGHT"
+        page_title = title
+        context = None
+        page = None
+
+        try:
+            context = await playwright_browser.new_context(
+                user_agent=self.http_headers["User-Agent"], viewport={"width": 1920, "height": 1080}, ignore_https_errors=True
+            )
+            await context.add_init_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined});")
+            page = await context.new_page()
+
+            await page.goto(target_url, wait_until="domcontentloaded", timeout=self.timeout * 1000)
+
+            if "google.com" in target_url:
+                try:
+                    await page.wait_for_url(lambda u: "google.com" not in u, timeout=5000)
+                except Exception:
+                    pass
+            try:
+                await page.wait_for_load_state("domcontentloaded", timeout=4000)
+            except Exception:
+                pass
+
+            await page.wait_for_timeout(1000)
+
+            final_url = page.url
+            raw_t = await page.title()
+            full_page_html = await page.content()
+            page_title = extract_clean_headline(full_page_html, fallback_title=raw_t or title, source=source)
+
+            css_path, is_def = get_css_selector_for_url(final_url, self.css_paths_map, self.default_css_path, silent=True)
+
+            eval_js = """(css) => {
+                let el = document.querySelector(css);
+                if (el) return el.innerHTML;
+                let nodes = document.querySelectorAll(css);
+                if (nodes.length > 0) return Array.from(nodes).map(n => n.innerHTML).join('\\n');
+                let sem = document.querySelector('article, main, .article-content');
+                return sem ? sem.innerHTML : (document.body ? document.body.innerHTML : '');
+            }"""
+
+            async def _extract_html():
+                if css_path == "body":
+                    return await page.content()
+                res = await page.evaluate(eval_js, css_path)
+                return res if (res and len(res.strip()) >= 100) else await page.content()
+
+            try:
+                raw_html = await _extract_html()
+            except Exception:
+                await page.wait_for_timeout(1500)
+                final_url = page.url
+                raw_html = await _extract_html()
+
+            md_text = convert_html_to_markdown(raw_html, url=final_url, title=page_title)
+            worthy, reason = is_cpt_worthy_content(final_url, md_text, min_words=self.min_words, title=page_title, raw_html=full_page_html)
+            status = "SUCCESS" if worthy else f"FILTERED: {reason}"
+            tier_label = "TIER2_PLAYWRIGHT"
+
+            # ---------------- TIER 3: KOMDIGI-BOT DELEGATOR (ON-DEMAND) ----------------
+            if not worthy and any(w in reason for w in ("WAF", "Bot", "CAPTCHA", "Just a moment")) and self.bot_solver_url:
+                print(f"[{idx}/{total}] [TIER 3 - BOT SOLVER] Mengirimkan target ke komdigi-bot ({self.bot_solver_url})...")
+                solved_html = await solve_captcha_via_bot(final_url, self.bot_solver_url, timeout=float(self.timeout * 2))
+                if solved_html:
+                    solved_md = convert_html_to_markdown(solved_html, url=final_url, title=page_title)
+                    s_worthy, s_reason = is_cpt_worthy_content(final_url, solved_md, min_words=self.min_words, title=page_title)
+                    if s_worthy:
+                        md_text = solved_md
+                        status = "SUCCESS"
+                        tier_label = "TIER3_KOMDIGI_BOT"
+                        print(f"[{idx}/{total}] [TIER 3 SUCCESS] Berhasil bypass proteksi via komdigi-bot ({len(md_text.split())} kata)")
+
+            elapsed_ms = (time.time() - t0) * 1000
+            words = len(md_text.split()) if md_text else 0
+            tag = f"[{tier_label.replace('_', ' ')}]" if status == "SUCCESS" else "[QUALITY GATE FILTERED]"
+            print(f"[{idx}/{total}] {tag} ({elapsed_ms:.0f}ms | {words} kata) [{source}] {final_url[:70]}...")
+
+        except Exception as e:
+            status = f"ERROR: {e}"
+            print(f"[{idx}/{total}] [CRAWL ERROR] {e} | {target_url[:70]}")
+        finally:
+            if page:
+                try:
+                    await asyncio.wait_for(page.close(), timeout=2.0)
+                except Exception:
+                    pass
+            if context:
+                try:
+                    await asyncio.wait_for(context.close(), timeout=2.0)
+                except Exception:
+                    pass
+
+        return {
+            "url": final_url, "raw_url": raw_url, "title": clean_headline_title(page_title or title, source=source), "source": source,
+            "pub_date": pub_date, "tier": tier_label, "content": md_text if status == "SUCCESS" else "",
+            "word_count": len(md_text.split()) if status == "SUCCESS" else 0, "status": status,
+        }
 
     async def _crawl_single_article(
         self, article: Dict[str, str], client: httpx.AsyncClient, playwright_browser, idx: int, total: int
@@ -876,118 +1070,15 @@ class HybridAsyncCrawler:
 
         async with self.semaphore:
             try:
-                # ---------------- TIER 1: FAST-PATH ----------------
-                t0 = time.time()
-                tier1_res = await self._fetch_tier1_fastpath(client, target_url, fallback_title=title, source=source)
-                if tier1_res:
-                    final_url, md_text, p_title = tier1_res
-                    clean_res_title = clean_headline_title(p_title or title, source=source)
-                    elapsed_ms = (time.time() - t0) * 1000
-                    words = len(md_text.split())
-                    print(f"[{idx}/{total}] [TIER 1 - FAST PATH] ({elapsed_ms:.0f}ms | {words} kata) [{source}] {target_url[:75]}...")
-                    return {
-                        "url": final_url, "raw_url": raw_url, "title": clean_res_title, "source": source,
-                        "pub_date": pub_date, "tier": "TIER1_FAST_PATH", "content": md_text, "word_count": words, "status": "SUCCESS",
-                    }
-
-                # ---------------- TIER 2: PLAYWRIGHT FALLBACK ----------------
-                t0 = time.time()
-                final_url = target_url
-                md_text = ""
-                status = "SUCCESS"
-                tier_label = "TIER2_PLAYWRIGHT"
-                page_title = title
-                context = None
-                page = None
-
-                try:
-                    context = await playwright_browser.new_context(
-                        user_agent=self.http_headers["User-Agent"], viewport={"width": 1920, "height": 1080}, ignore_https_errors=True
-                    )
-                    await context.add_init_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined});")
-                    page = await context.new_page()
-
-                    await page.goto(target_url, wait_until="domcontentloaded", timeout=self.timeout * 1000)
-
-                    if "google.com" in target_url:
-                        try:
-                            await page.wait_for_url(lambda u: "google.com" not in u, timeout=5000)
-                        except Exception:
-                            pass
-                    try:
-                        await page.wait_for_load_state("domcontentloaded", timeout=4000)
-                    except Exception:
-                        pass
-
-                    await page.wait_for_timeout(1000)
-
-                    final_url = page.url
-                    raw_t = await page.title()
-                    full_page_html = await page.content()
-                    page_title = extract_clean_headline(full_page_html, fallback_title=raw_t or title, source=source)
-
-                    css_path, is_def = get_css_selector_for_url(final_url, self.css_paths_map, self.default_css_path, silent=True)
-
-                    eval_js = """(css) => {
-                        let el = document.querySelector(css);
-                        if (el) return el.innerHTML;
-                        let nodes = document.querySelectorAll(css);
-                        if (nodes.length > 0) return Array.from(nodes).map(n => n.innerHTML).join('\\n');
-                        let sem = document.querySelector('article, main, .article-content');
-                        return sem ? sem.innerHTML : (document.body ? document.body.innerHTML : '');
-                    }"""
-
-                    async def _extract_html():
-                        if css_path == "body":
-                            return await page.content()
-                        res = await page.evaluate(eval_js, css_path)
-                        return res if (res and len(res.strip()) >= 100) else await page.content()
-
-                    try:
-                        raw_html = await _extract_html()
-                    except Exception:
-                        await page.wait_for_timeout(1500)
-                        final_url = page.url
-                        raw_html = await _extract_html()
-
-                    md_text = convert_html_to_markdown(raw_html, url=final_url, title=page_title)
-                    worthy, reason = is_cpt_worthy_content(final_url, md_text, min_words=self.min_words, title=page_title, raw_html=full_page_html)
-                    status = "SUCCESS" if worthy else f"FILTERED: {reason}"
-                    tier_label = "TIER2_PLAYWRIGHT"
-
-                    # ---------------- TIER 3: KOMDIGI-BOT DELEGATOR (ON-DEMAND) ----------------
-                    if not worthy and any(w in reason for w in ("WAF", "Bot", "CAPTCHA", "Just a moment")) and self.bot_solver_url:
-                        print(f"[{idx}/{total}] [TIER 3 - BOT SOLVER] Mengirimkan target ke komdigi-bot ({self.bot_solver_url})...")
-                        solved_html = await solve_captcha_via_bot(final_url, self.bot_solver_url, timeout=float(self.timeout * 2))
-                        if solved_html:
-                            solved_md = convert_html_to_markdown(solved_html, url=final_url, title=page_title)
-                            s_worthy, s_reason = is_cpt_worthy_content(final_url, solved_md, min_words=self.min_words, title=page_title)
-                            if s_worthy:
-                                md_text = solved_md
-                                status = "SUCCESS"
-                                tier_label = "TIER3_KOMDIGI_BOT"
-                                print(f"[{idx}/{total}] [TIER 3 SUCCESS] Berhasil bypass proteksi via komdigi-bot ({len(md_text.split())} kata)")
-
-                    elapsed_ms = (time.time() - t0) * 1000
-                    words = len(md_text.split()) if md_text else 0
-                    tag = f"[{tier_label.replace('_', ' ')}]" if status == "SUCCESS" else "[QUALITY GATE FILTERED]"
-                    print(f"[{idx}/{total}] {tag} ({elapsed_ms:.0f}ms | {words} kata) [{source}] {final_url[:70]}...")
-
-                except Exception as e:
-                    status = f"ERROR: {e}"
-                    print(f"[{idx}/{total}] [CRAWL ERROR] {e} | {target_url[:70]}")
-                finally:
-                    if page:
-                        try: await page.close()
-                        except Exception: pass
-                    if context:
-                        try: await context.close()
-                        except Exception: pass
-
+                return await asyncio.wait_for(
+                    self._crawl_single_article_worker(article, client, playwright_browser, idx, total),
+                    timeout=float(self.timeout * 2 + 5),
+                )
+            except asyncio.TimeoutError:
+                print(f"[{idx}/{total}] [TIMEOUT] Worker melebihi batas waktu ({self.timeout * 2 + 5}s) | {target_url[:70]}")
                 return {
-                    "url": final_url, "raw_url": raw_url, "title": clean_headline_title(page_title or title, source=source), "source": source,
-                    "pub_date": pub_date, "tier": tier_label, "content": md_text if status == "SUCCESS" else "",
-                    "word_count": len(md_text.split()) if status == "SUCCESS" else 0, "status": status,
+                    "url": target_url, "raw_url": raw_url, "title": title, "source": source,
+                    "pub_date": pub_date, "tier": "TIMEOUT", "content": "", "word_count": 0, "status": "ERROR: Worker Timeout",
                 }
             except Exception as outer_e:
                 print(f"[{idx}/{total}] [WORKER ERROR] {outer_e} | {target_url[:70]}")

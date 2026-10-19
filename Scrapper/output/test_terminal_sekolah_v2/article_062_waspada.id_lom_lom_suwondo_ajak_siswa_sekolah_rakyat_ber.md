@@ -27,7 +27,3 @@ Di akhir sambutannya, Lom Lom menyampaikan apresiasi kepada Presiden Prabowo Sub
 "Sudah layak kita mengucapkan terima kasih kepada Presiden Republik Indonesia, Bapak Prabowo Subianto, atas kesempatan dan keadilan yang diberikan kepada anak-anak Indonesia, khususnya anak-anak Deliserdang yang hari ini berada di Sekolah Rakyat. Jangan sia-siakan kesempatan, karena kesempatan itu datangnya bukan untuk semua orang," pungkasnya.
 
 Sementara itu, Kepala Sekolah Rakyat Deliserdang, Reni Lasmaria Sinaga, mengapresiasi kehadiran dan motivasi yang diberikan Wakil Bupati. Ia berharap sinergi antara Sekolah Rakyat dan Pemkab Deliserdang terus terjalin untuk meningkatkan kualitas pendidikan dan memberikan kesempatan belajar yang lebih baik bagi para siswa.(id 28)
-
-## Discussion
-
-Bagikan pemikiran dan pendapat Anda

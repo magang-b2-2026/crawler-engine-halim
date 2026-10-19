@@ -25,5 +25,3 @@ Ketua DPRK Aceh Besar, Abdul Muchti, yang turut hadir dalam kegiatan itu, mengin
 Ia meminta para siswa memanfaatkan kesempatan pendidikan dengan sungguh-sungguh dan tidak mudah menyerah ketika menghadapi kesulitan selama proses belajar.
 
 Pemerintah Kabupaten Aceh Besar menyatakan dukungan terhadap upaya perluasan akses pendidikan dan peningkatan kualitas sumber daya manusia. Kolaborasi dengan pemerintah pusat, Pemerintah Aceh, satuan pendidikan, serta masyarakat diharapkan dapat memperkuat keberlanjutan program Sekolah Rakyat.
-
-## Discussion about this post

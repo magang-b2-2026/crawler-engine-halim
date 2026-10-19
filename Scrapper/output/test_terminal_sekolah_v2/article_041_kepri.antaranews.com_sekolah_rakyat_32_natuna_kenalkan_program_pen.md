@@ -26,8 +26,6 @@ Ia juga mengaku betah bersekolah di SRT 32 Natuna karena tenaga pendidik, wali a
 
 "Kalau ada yang nakal, dinasihati. Kepala sekolah juga sering menasihati kami agar belajar serius demi masa depan," katanya.
 
-Berita ini telah tayang di Antaranews.com dengan judul:
-
 **SRT 32 Natuna kenalkan program pendidikan kepada masyarakat**
 
 Editor:

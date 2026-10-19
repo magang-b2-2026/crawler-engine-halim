@@ -43,5 +43,3 @@ Sebelum itu, panitia penyelenggara juga menyampaikan kegiatan Open House tersebu
 Kegiatan ini diharapkan dapat memberikan informasi yang lebih luas mengenai penyelenggaraan dan berbagai aspek pendidikan di Sekolah Rakyat. (wsp/b03/d2)
 
 Editor AGUS UTAMA
-
-## Discussion about this post

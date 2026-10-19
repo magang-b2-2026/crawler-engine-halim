@@ -14,4 +14,4 @@ Menurutnya, Sekolah Rakyat hadir untuk membantu membangkitkan kembali semangat a
 
 "Melalui proses pendidikan dan pembinaan karakter, para siswa diharapkan mampu membangun kepercayaan diri, mengembangkan potensi, serta memiliki keberanian untuk mewujudkan cita-cita mereka," Ujar Mensos.
 
-Kegiatan open house ini menjadi salah satu upaya untuk menunjukkan bahwa Sekolah Rakyat tidak hanya berfokus pada pendidikan akademik, tetapi juga pada pengembangan keterampilan, kreativitas, kemandirian, dan karakter siswa sebagai bekal menghadapi masa depan.(\*\*)
+Kegiatan open house ini menjadi salah satu upaya untuk menunjukkan bahwa Sekolah Rakyat tidak hanya berfokus pada pendidikan akademik, tetapi juga pada pengembangan keterampilan, kreativitas, kemandirian, dan karakter siswa sebagai bekal menghadapi masa depan.

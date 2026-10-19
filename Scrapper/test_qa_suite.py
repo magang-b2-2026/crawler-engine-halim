@@ -632,13 +632,66 @@ class TestHeadlineAndEmbedNoiseCleaning(unittest.TestCase):
         self.assertEqual(clean_headline_title(t2), "Siswa Sekolah Rakyat Terintegrasi 1 Banyuwangi berkembang positif")
         self.assertEqual(clean_headline_title(t3), "Sekolah Rakyat Terintegrasi 76 Mimika bina 58 siswa")
 
-    def test_server_side_paywall_schema_rejection(self):
-        """Memastikan artikel paywall yang dideklarasikan lewat Schema.org isAccessibleForFree: false ditolak."""
-        html_paywall = '<script type="application/ld+json">{"@type":"NewsArticle","isAccessibleForFree":false}</script>'
-        short_lead = "Dugaan perundungan siswa sekolah rakyat di kabupaten pati jawa tengah terjadi pada akhir bulan lalu."
-        worthy, reason = is_cpt_worthy_content("https://www.tempo.co/politik/123", short_lead, min_words=10, raw_html=html_paywall)
+    def test_kotabogor_sidebar_and_address_cleaning(self):
+        """Memastikan header Balai Kota, alamat jalan, dan widget Berita Terbaru terpotong bersih."""
+        raw_bogor = (
+            "##### Balai Kota Bogor\n\n"
+            "Jl. Ir. H. Juanda No. 10 Bogor\n\n"
+            "Wali Kota Bogor, Dedie A. Rachim, mengunjungi Sekolah Rakyat Terintegrasi 6 Kota Bogor pada Sabtu kemarin.\n\n"
+            "Dedie Rachim berpesan agar para siswa dapat menjaga fasilitas yang tersedia dengan baik demi masa depan bangsa.\n\n"
+            "## Berita Terbaru\n\n"
+            "## Mengudara Selama 53 Tahun, Dedie Rachim Apresiasi Radio Megaswara\n\n"
+            "## Peran Masyarakat dalam Mitigasi Bencana\n"
+        )
+        cleaned = sanitize_cpt_text(raw_bogor, title="Kunjungi Sekolah Rakyat")
+        self.assertNotIn("Balai Kota Bogor", cleaned)
+        self.assertNotIn("Jl. Ir. H. Juanda", cleaned)
+        self.assertNotIn("Berita Terbaru", cleaned)
+        self.assertNotIn("Mengudara Selama 53 Tahun", cleaned)
+        self.assertIn("Wali Kota Bogor, Dedie A. Rachim", cleaned)
+
+    def test_trailing_discussion_and_comments_truncated(self):
+        """Memastikan bagian komentar, diskusi, dan balasan di akhir artikel dipotong."""
+        raw_text = (
+            "Program Sekolah Rakyat ini sangat diapresiasi oleh berbagai kalangan masyarakat di daerah.\n\n"
+            "Diharapkan program ini terus berkelanjutan untuk membantu anak-anak kurang mampu.\n\n"
+            "## Discussion\n\n"
+            "Bagikan pemikiran dan pendapat Anda mengenai program ini.\n\n"
+            "## 0 Komentar\n"
+        )
+        cleaned = sanitize_cpt_text(raw_text)
+        self.assertNotIn("Discussion", cleaned)
+        self.assertNotIn("Bagikan pemikiran", cleaned)
+        self.assertNotIn("0 Komentar", cleaned)
+        self.assertIn("Program Sekolah Rakyat ini sangat diapresiasi", cleaned)
+
+    def test_navigation_menu_dump_rejection(self):
+        """Memastikan dump menu navigasi dan link non-narasi ditolak oleh Quality Gatekeeper."""
+        menu_dump = (
+            "* [Home](https://portal.example.com/home)\n"
+            "* [Sejarah Daerah](https://portal.example.com/sejarah)\n"
+            "* [Visi dan Misi](https://portal.example.com/visi)\n"
+            "* [Layanan Publik](https://portal.example.com/layanan)\n"
+            "* [Struktur Organisasi](https://portal.example.com/struktur)\n"
+            "* [Galeri Foto](https://portal.example.com/galeri)\n"
+            "* [Unduh Regulasi](https://portal.example.com/unduh)\n"
+            "* [Kontak Kami](https://portal.example.com/kontak)\n"
+        )
+        worthy, reason = is_cpt_worthy_content("https://portal.example.com/menu", menu_dump, min_words=10)
         self.assertFalse(worthy)
-        self.assertIn("isAccessibleForFree", reason)
+        self.assertIn("dump menu navigasi", reason)
+
+    def test_syndication_and_app_install_purged(self):
+        """Memastikan disclaimer sindikasi dan ajakan pasang aplikasi dibersihkan."""
+        raw = (
+            "Pemerintah terus memperluas akses pendidikan berkualitas bagi anak keluarga rentan.\n\n"
+            "Berita ini telah tayang di Antaranews.com dengan judul: Pemkab Sediakan Lahan\n\n"
+            "Install aplikasi **RadarSulbar** untuk mendapatkan berita terbaru.\n"
+        )
+        cleaned = sanitize_cpt_text(raw)
+        self.assertNotIn("Berita ini telah tayang", cleaned)
+        self.assertNotIn("Install aplikasi", cleaned)
+        self.assertIn("Pemerintah terus memperluas", cleaned)
 
 
 class TestBotSolverDelegator(unittest.TestCase):

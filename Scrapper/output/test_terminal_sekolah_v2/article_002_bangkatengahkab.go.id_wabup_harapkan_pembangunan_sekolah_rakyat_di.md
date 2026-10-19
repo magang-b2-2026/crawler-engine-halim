@@ -17,5 +17,3 @@ Melalui pembahasan pemutakhiran *Readiness Criteria* SR III Wilayah Barat terseb
 Hadir juga pada kesempatan tersebut dari Satker Pelaksana Strategis Bangka Belitung, BWS Babel, BPBPK Babel, BMKG Bateng, Kepala BPN Bateng, Kepala BPS Bateng, para Kepala OPD beserta jajarannya.\* Sumber: Diskominfosta Bangka Tengah
 
 Fotografer: Raditya
-
-## LEAVE A REPLY

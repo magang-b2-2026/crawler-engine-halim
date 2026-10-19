@@ -21,5 +21,3 @@ Pihak sekolah, lanjutnya, berkomitmen menjadikan sekolah sebagai rumah kedua bag
 Melalui kegiatan *Open House* ini, Sekolah Rakyat Terintegrasi 1 Kuansing diharapkan semakin dikenal masyarakat sebagai bagian dari upaya memperluas akses pendidikan yang inklusif dan berkeadilan.
 
 Pendidikan menjadi salah satu jalan penting untuk meningkatkan kualitas sumber daya manusia dan memutus mata rantai kemiskinan. Dengan dukungan pemerintah, tenaga pendidik, orang tua, serta masyarakat, Sekolah Rakyat diharapkan mampu membuka peluang bagi anak-anak Kuansing untuk tumbuh, berkembang, dan meraih masa depan yang lebih baik.
-
-## 0 Komentar
