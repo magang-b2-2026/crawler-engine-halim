@@ -382,13 +382,17 @@ def sanitize_cpt_text(text: str, title: str = "") -> str:
         if re.match(r"^[.\-_*=~]{3,}$", line_str):
             continue
 
-        # Deteksi pemisah bagian penutup (Berita Terkait, Berita Terbaru, Rekomendasi, Diskusi, Komentar, Kontak Medsos)
-        # Ketika bagian ini muncul, sisa teks ke bawah adalah widget/kontak dan harus dipotong (truncate).
+        # Deteksi pemisah bagian penutup (Berita Terkait, Berita Terbaru, Rekomendasi, Diskusi, Komentar, Kontak Medsos, Kredit Editor)
+        # Ketika bagian ini muncul, sisa teks ke bawah adalah widget/kontak/kredit dan harus dipotong (truncate).
         if re.match(
             r"^(?:#+\s*)?(?:berita\s+terbaru|berita\s+terkait|artikel\s+terkait|baca\s+juga\s*:?$|baca\s+artikel\s+lainnya|rekomendasi\s+berita|berita\s+populer|terpopuler|trending\s+topic|pilihan\s+editor|related\s+news|latest\s+news|discussion(?:\s+about\s+this\s+post)?|komentar(?:\s+pembaca)?|\d+\s+komentar|tulis\s+komentar|kirim\s+komentar|informasi\s+(?:seputar|terkait|lebih\s+lanjut)\s+.*?\s+(?:bisa|dapat)\s+diakses(?:\s+melalui)?|dapat\s+diakses\s+melalui|informasi\s+selengkapnya\s+dapat\s+diakses|ikuti\s+media\s+sosial\s+kami|kontak\s+dan\s+media\s+sosial|hubungi\s+kami\s+melalui|saluran\s+resmi\s+kami)\s*:?$",
             line_str,
             re.I,
         ):
+            break
+
+        # Baris penutup kredit redaksi mandiri (misal: "Editor:", "Pewarta:", "Fotografer:") di bagian akhir artikel
+        if len(clean_lines) >= 2 and re.match(r"^(?:#+\s*)?(?:\*\*|__|\*|_|\\\*)?\s*(?:editor|pewarta|reporter|penulis|kontributor|redaktur|fotografer|sumber)\s*:?\s*$", line_str, re.I):
             break
 
         # Eliminasi heading/baris identitas instansi, balai kota, kantor bupati, gedung pemerintahan, atau navigasi portal
@@ -417,8 +421,11 @@ def sanitize_cpt_text(text: str, title: str = "") -> str:
         if re.match(r"^\d+\s+(?:kali\s+dibaca|views?|reads?)$", line_str, re.I):
             continue
 
-        # C. Eliminasi metadata author/uploader CMS (misal: "Diposting Oleh : Newsroom Diskominfosantik -", "Pewarta: ...")
-        if re.match(r"^(?:\*\*|__)?\s*(?:diposting(?:\s+oleh)?|diterbitkan(?:\s+oleh)?|dipublikasikan(?:\s+pada)?|posted(?:\s+by)?|penulis|pewarta|reporter|editor|kontributor|redaktur|alih\s+bahasa|rilis|tanggal(?:\s+rilis)?|update)\s*:\s*[^\n]+$", line_str, re.I):
+        # Eliminasi inline Sumber atau catatan rilis di akhir baris (misal: "para Kepala OPD beserta jajarannya.\* Sumber: Diskominfosta Bangka Tengah")
+        line_str = re.sub(r"\s*(?:[\.\*\\\_]|\b)+\s*sumber\s*:\s*[^\n]+$", ".", line_str, flags=re.I).strip()
+
+        # C. Eliminasi metadata author/uploader CMS (misal: "Diposting Oleh : Newsroom Diskominfosantik -", "Pewarta: ...", "Fotografer: ...", "Editor:")
+        if re.match(r"^(?:\*\*|__|\*|_|\\\*)?\s*(?:diposting(?:\s+oleh)?|diterbitkan(?:\s+oleh)?|dipublikasikan(?:\s+pada)?|posted(?:\s+by)?|penulis|pewarta|reporter|editor|kontributor|redaktur|alih\s+bahasa|rilis|tanggal(?:\s+rilis)?|update|fotografer|sumber(?:\s+foto)?)\s*:\s*[^\n]*$", line_str, re.I):
             continue
 
         # D. Eliminasi rubrik/kategori terisolasi (misal: "PENDIDIKAN", "EKONOMI")
@@ -440,9 +447,9 @@ def sanitize_cpt_text(text: str, title: str = "") -> str:
             continue
 
         # H. Eliminasi caption gambar & kredit foto
-        if re.search(r"(?:foto|photo|dok(?:umen)?|ilustrasi|sumber\s+foto)\s*:\s*[A-Za-z0-9/\.\s\-\*\_]+$", line_str, re.I) and len(line_str) < 300:
+        if re.search(r"(?:foto|photo|dok(?:umen)?|ilustrasi|sumber\s+foto|fotografer)\s*:\s*[A-Za-z0-9/\.\s\-\*\_]+$", line_str, re.I) and len(line_str) < 300:
             continue
-        if re.match(r"^\(?(?:foto|photo|dok(?:umen)?|ilustrasi)\s*[:/]\s*[^\n\)]+\)?$", line_str, re.I):
+        if re.match(r"^\(?(?:foto|photo|dok(?:umen)?|ilustrasi|fotografer)\s*[:/]\s*[^\n\)]+\)?$", line_str, re.I):
             continue
 
         # I. Eliminasi copyright, disclaimer anti-crawler, arsip paywall, sindikasi, dan CTA donasi
@@ -494,7 +501,7 @@ def sanitize_cpt_text(text: str, title: str = "") -> str:
     text = re.sub(r"(?:\s+|^)(?:\*\*|__)?\s*\(\s*[a-zA-Z0-9]{2,5}\s*/\s*[a-zA-Z0-9]{2,5}\s*\)\s*(?:\*\*|__)?\s*$", "", text.strip(), flags=re.I)
     text = re.sub(r"(?:\s+|^)(?:\*\*|__)?\s*\(\s*(?:ant|red|tim|[a-zA-Z]{3,4})\s*\)\s*(?:\*\*|__)?\s*$", "", text.strip(), flags=re.I)
 
-    # 9B. Pembersihan teaser video/promosi berformat tebal terisolasi di akhir artikel (misal: "**Perjalanan Oscar Motuloh...**")
+    # 9B. Pembersihan metadata jurnalistik, inisial institusi, dan teaser promosi di akhir artikel
     temp_lines = text.strip().splitlines()
     changed = True
     while changed and temp_lines:
@@ -504,11 +511,34 @@ def sanitize_cpt_text(text: str, title: str = "") -> str:
             temp_lines.pop()
             changed = True
             continue
-        # Inisial redaksi tersisa di baris terakhir
-        if re.search(r"^(?:\*\*|__)?\s*\(\s*(?:[a-zA-Z0-9]{2,5}\s*/\s*[a-zA-Z0-9]{2,5}|ant|red|tim|[a-zA-Z]{3,4})\s*\)\s*(?:\*\*|__)?$", last_line, re.I):
+        # Inisial redaksi tersisa di baris terakhir (misal: (kcm/ard), (ant/red), (id 28), (Hil))
+        if re.search(r"^(?:\*\*|__)?\s*\(\s*(?:[a-zA-Z0-9]{2,5}\s*/\s*[a-zA-Z0-9]{2,5}|ant|red|tim|[a-zA-Z]{1,4}(?:\s+\d+)?)\s*\)\s*(?:\*\*|__)?$", last_line, re.I):
             temp_lines.pop()
             changed = True
             continue
+        # Inisial/kredit institusi media di baris terakhir (misal: Diskominfo/D, Kominfo/Fikri, Setda/A, Humas/B)
+        if re.search(r"^(?:\*\*|__|\*|_)?\s*(?:Diskominfo|Kominfo|Humas|Prokopim|Setda|Media\s+Center)\s*(?:[/\\-]\s*[A-Za-z0-9\s]+|\([A-Za-z0-9\s]+\))\s*(?:\*\*|__|\*|_)?$", last_line, re.I):
+            temp_lines.pop()
+            changed = True
+            continue
+        # Metadata editor/pewarta/fotografer/sumber di baris terakhir
+        if re.match(r"^(?:\*\*|__|\*|_|\\\*)?\s*(?:editor|pewarta|reporter|penulis|kontributor|redaktur|fotografer|foto|photo|sumber|alih\s+bahasa)\s*:\s*.*$", last_line, re.I):
+            temp_lines.pop()
+            changed = True
+            continue
+        # Baris label metadata tanpa isi (misal: "Editor:", "Pewarta:")
+        if re.match(r"^(?:\*\*|__|\*|_|\\\*)?\s*(?:editor|pewarta|reporter|penulis|kontributor|redaktur|fotografer|sumber)\s*:?\s*$", last_line, re.I):
+            temp_lines.pop()
+            changed = True
+            continue
+        # Nama jurnalis/editor mandiri di baris terakhir jika didahului label Editor/Pewarta (misal: "Editor:\n\nZabur Karuru")
+        if len(temp_lines) >= 2:
+            prev_line = temp_lines[-2].strip()
+            if re.match(r"^(?:\*\*|__|\*|_|\\\*)?\s*(?:editor|pewarta|reporter|penulis|kontributor|redaktur|fotografer)\s*:?\s*$", prev_line, re.I):
+                temp_lines.pop()  # pop nama editor
+                temp_lines.pop()  # pop label editor
+                changed = True
+                continue
         # Trailing bold teaser tanpa tanda baca penutup kalimat (. ! ? :" .")
         if re.match(r"^(?:\*\*|__)[^\*\_\n]{5,150}(?:\*\*|__)$", last_line) and not re.search(r"[\.!\?\"'](?:\*\*|__)$", last_line):
             temp_lines.pop()

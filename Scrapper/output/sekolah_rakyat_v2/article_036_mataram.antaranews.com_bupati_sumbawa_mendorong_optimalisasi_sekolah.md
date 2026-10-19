@@ -21,7 +21,3 @@ Selain menerapkan pembelajaran berbasis digital dan *smart learning*, sekolah ju
 Nani berharap dukungan pemerintah daerah, masyarakat, dan para pemangku kepentingan terus menguat agar Sekolah Rakyat dapat memberikan layanan pendidikan yang optimal bagi siswa.
 
 Melalui dukungan tersebut, Sekolah Rakyat diharapkan menjadi wadah bagi anak-anak dari keluarga miskin ekstrem untuk mengembangkan potensi, meraih masa depan yang lebih baik, dan memiliki daya saing.
-
-Editor:
-
-I Komang Suparta

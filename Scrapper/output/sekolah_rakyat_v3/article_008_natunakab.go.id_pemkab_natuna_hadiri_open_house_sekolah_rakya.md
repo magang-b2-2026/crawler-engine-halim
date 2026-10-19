@@ -27,5 +27,3 @@ Lebih lanjut, Sekda menyampaikan harapan agar pengembangan Sekolah Rakyat ke dep
 Kegiatan Open House ini diharapkan dapat memperkenalkan keberadaan dan program Sekolah Rakyat kepada masyarakat sekaligus memperkuat kolaborasi antara pemerintah daerah, tenaga pendidik, dan berbagai pemangku kepentingan dalam mendukung pendidikan yang inklusif. Melalui semangat "Cerdas Bersama Tumbuh Setara", SRT 32 Natuna diharapkan terus menjadi ruang bagi siswa untuk mengembangkan potensi, membangun karakter, dan meraih masa depan yang lebih baik.
 
 Rangkaian kegiatan ditutup dengan foto bersama dan peninjauan lingkungan SRT 32 Natuna oleh Sekretaris Daerah Kabupaten Natuna bersama para tamu undangan.
-
-Diskominfo/D

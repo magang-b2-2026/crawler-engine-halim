@@ -14,6 +14,4 @@ Efrianda menegaskan, Pemerintah Kabupaten Bangka Tengah berharap pembangunan Sek
 
 Melalui pembahasan pemutakhiran *Readiness Criteria* SR III Wilayah Barat tersebut, Pemerintah Kabupaten Bangka Tengah berharap seluruh pihak terkait dapat memberikan dukungan dan menindaklanjuti berbagai hal yang masih diperlukan. Dengan koordinasi dan komitmen bersama, rencana pembangunan Sekolah Rakyat di Kabupaten Bangka Tengah diharapkan dapat segera terealisasi dan memberikan manfaat bagi masyarakat.
 
-Hadir juga pada kesempatan tersebut dari Satker Pelaksana Strategis Bangka Belitung, BWS Babel, BPBPK Babel, BMKG Bateng, Kepala BPN Bateng, Kepala BPS Bateng, para Kepala OPD beserta jajarannya.\* Sumber: Diskominfosta Bangka Tengah
-
-Fotografer: Raditya
+Hadir juga pada kesempatan tersebut dari Satker Pelaksana Strategis Bangka Belitung, BWS Babel, BPBPK Babel, BMKG Bateng, Kepala BPN Bateng, Kepala BPS Bateng, para Kepala OPD beserta jajarannya.

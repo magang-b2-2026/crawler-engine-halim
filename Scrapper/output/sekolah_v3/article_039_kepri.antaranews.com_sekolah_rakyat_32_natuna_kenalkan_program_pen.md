@@ -25,9 +25,3 @@ Sementara itu, siswa SRT 32 Natuna Endah Sari Lina mengaku senang bisa bersekola
 Ia juga mengaku betah bersekolah di SRT 32 Natuna karena tenaga pendidik, wali asuh, dan wali asrama peduli terhadap dirinya serta teman-temannya.
 
 "Kalau ada yang nakal, dinasihati. Kepala sekolah juga sering menasihati kami agar belajar serius demi masa depan," katanya.
-
-**SRT 32 Natuna kenalkan program pendidikan kepada masyarakat**
-
-Editor:
-
-Nadilla

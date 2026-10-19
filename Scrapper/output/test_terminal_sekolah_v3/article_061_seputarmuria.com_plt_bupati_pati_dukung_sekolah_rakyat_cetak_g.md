@@ -1,6 +1,6 @@
 # Plt Bupati Pati Dukung Sekolah Rakyat Cetak Generasi Emas dari Keluarga Kurang Mampu
 
-JAWA TENGAH - Plt Bupati Pati, Risma Ardhi Chandra, menegaskan dukungannya terhadap kesetaraan kesempatan pendidikan bagi anak-anak dari keluarga kurang mampu melalui program Sekolah Rakyat. Hal itu ia sampaikan saat menghadiri Open House Sekolah Rakyat Pati, Sabtu (17/10/2026).
+Plt Bupati Pati, Risma Ardhi Chandra, menegaskan dukungannya terhadap kesetaraan kesempatan pendidikan bagi anak-anak dari keluarga kurang mampu melalui program Sekolah Rakyat. Hal itu ia sampaikan saat menghadiri Open House Sekolah Rakyat Pati, Sabtu (17/10/2026).
 
 Chandra berharap program ini membuka peluang bagi anak-anak kurang mampu untuk meraih cita-cita dan menjadi generasi emas Kabupaten Pati.
 

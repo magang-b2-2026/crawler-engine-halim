@@ -21,7 +21,3 @@ Sementara itu Kepala SRT 2 Kota Kendari Ferdinand Nicholas Bonde membeberkan bah
 Ia menambahkan seluruh kegiatan belajar mengajar dan operasional asrama di SRT 2 Kendari didukung penuh oleh puluhan tenaga pendidik dan pengasuh.
 
 "Untuk total guru SD, SMP, hingga SMA ada 47 orang. Selain itu kami didampingi 29 orang wali asrama dan 27 orang wali asuh yang semuanya aktif sampai sekarang," jelasnya.
-
-Editor:
-
-Zabur Karuru

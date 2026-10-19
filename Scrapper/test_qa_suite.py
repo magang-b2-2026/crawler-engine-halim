@@ -716,6 +716,36 @@ class TestHeadlineAndEmbedNoiseCleaning(unittest.TestCase):
         self.assertNotIn(".......", cleaned)
         self.assertIn("Warga sedulur Banten, Sekolah Rakyat Provinsi Banten", cleaned)
 
+    def test_editorial_signatures_fotografer_and_inline_sumber(self):
+        """Memastikan 'Fotografer: Raditya', inline 'Sumber: ...', 'Diskominfo/D', dan 'Editor:\n\nZabur Karuru' dibersihkan."""
+        raw_article2 = (
+            "Pemerintah Kabupaten Bangka Tengah menggelar rapat koordinasi pembangunan sekolah.\n\n"
+            "para Kepala OPD beserta jajarannya.\\* Sumber: Diskominfosta Bangka Tengah\n\n"
+            "Fotografer: Raditya\n"
+        )
+        c2 = sanitize_cpt_text(raw_article2)
+        self.assertNotIn("Sumber: Diskominfosta", c2)
+        self.assertNotIn("Fotografer: Raditya", c2)
+        self.assertIn("para Kepala OPD beserta jajarannya.", c2)
+
+        raw_article8 = (
+            "Kegiatan ditutup dengan foto bersama jajaran dinas.\n\n"
+            "Diskominfo/D\n"
+        )
+        c8 = sanitize_cpt_text(raw_article8)
+        self.assertNotIn("Diskominfo/D", c8)
+        self.assertIn("Kegiatan ditutup dengan foto bersama", c8)
+
+        raw_article18 = (
+            "Seluruh kegiatan belajar mengajar didukung penuh oleh puluhan guru dan pengasuh.\n\n"
+            "Editor:\n\n"
+            "Zabur Karuru\n"
+        )
+        c18 = sanitize_cpt_text(raw_article18)
+        self.assertNotIn("Editor:", c18)
+        self.assertNotIn("Zabur Karuru", c18)
+        self.assertIn("Seluruh kegiatan belajar mengajar", c18)
+
 
 class TestBotSolverDelegator(unittest.TestCase):
     def test_solve_captcha_via_bot_offline_graceful_fallback(self):
