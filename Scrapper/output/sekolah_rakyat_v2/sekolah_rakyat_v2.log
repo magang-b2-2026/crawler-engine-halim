@@ -1,0 +1,39 @@
+=== PIPELINE AUDIT REPORT & QUALITY LOG ===
+Waktu Eksekusi       : 2026-10-19 10:12:51
+Topik Pencarian      : Sekolah Rakyat
+Total URL Diproses   : 100
+Total Lolos CPT Bersih: 82 artikel (33,291 kata)
+  - Jalur Tier 1 (Fast-Path) : 82 artikel
+  - Jalur Tier 2 (Playwright): 0 artikel
+  - Jalur Tier 3 (komdigi-bot): 0 artikel
+Total Duplikat Dieliminasi : 9 artikel
+Total Ditolak Quality Gate : 9 artikel
+Total Durasi Eksekusi: 81.12 detik
+
+--- DAFTAR ARTIKEL DUPLIKAT (DIELIMINASI) ---
+• [ANTARA News Banten] https://banten.antaranews.com/berita/393145/bagus-khoirunnas-dapat-penghargaan-di-anugerah-jurnalistik-sekolah-rakyat-2026/?&m=false -> [ANTARA News Bali] (100.0%)
+• [ANTARA News] https://m.antaranews.com/amp/berita/5793945/sekolah-rakyat-terintegrasi-76-mimika-saat-ini-membina-58-siswa -> [ANTARA News] (96.4%)
+• [klikbogor.id] https://klikbogor.id/kunjungi-sekolah-rakyat-terintegrasi-6-kota-bogor-dedie-rachim-pesan-siswa-jaga-fasilitas/ -> [Pemerintah Kota Bogor] (95.0%)
+• [ANTARA News] https://bengkulu.antaranews.com/amp/berita/482693/lkbn-antara-raih-4-penghargaan-di-anugerah-jurnalistik-sekolah-rakyat-2026 -> [ANTARA News Bali] (100.0%)
+• [Koran Jakarta ®] https://koran-jakarta.com/2026-10-18/tampung-350-siswa-sekolah-rakyat-bekasi-perkuat-misi-memutus-rantai-kemiskinan/amp -> [ANTARA News Megapolitan] (82.2%)
+• [ANTARA News Yogyakarta] https://jogja.antaranews.com/video/5793849/sekolah-rakyat-bangun-empati-dan-disiplin-siswa -> [ANTARA News] (100.0%)
+• [Koran Jakarta ®] https://koran-jakarta.com/2026-10-18/putus-rantai-kemiskinan-bupati-sumbawa-dorong-optimalisasi-sekolah-rakyat/amp -> [ANTARA News Mataram] (98.5%)
+• [Koran Jakarta ®] https://koran-jakarta.com/2026-10-18/bupati-ipuk-puji-perkembangan-siswa-sekolah-rakyat-terintegrasi-1-banyuwangi/amp -> [Antara News jatim] (94.0%)
+• [Koran Jakarta ®] https://koran-jakarta.com/2026-10-18/wali-kota-bogor-dorong-siswa-sekolah-rakyat-jaga-fasilitas-bersama/amp -> [Pemerintah Kota Bogor] (97.0%)
+
+--- DAFTAR ARTIKEL DITOLAK / GAGAL ---
+• https://bekasikab.go.id/sekolah-rakyat-kabupaten-bekasi-harapan-baru-memutus-rantai-kemiskinan: ERROR: Page.goto: net::ERR_CONNECTION_RESET at https://bekasikab.go.id/sekolah-rakyat-kabupaten-bekasi-harapan-baru-memutus-rantai-kemiskinan
+Call log:
+  - navigating to "https://bekasikab.go.id/sekolah-rakyat-kabupaten-bekasi-harapan-baru-memutus-rantai-kemiskinan", waiting until "domcontentloaded"
+
+• https://kemenag.go.id/nasional/calon-guru-agama-pada-sekolah-rakyat-akan-dites-kemampuan-baca-kitab-suci-svIz7: FILTERED: Konten teks kosong
+• https://portal.medan.go.id/index.php/galeri-foto/wali-kota-medan-hadiri-open-house-sekolah-rakyat-sambut-kembalinya-hak-belajar-anak__read4601.html: FILTERED: Teks narasi terlalu pendek (8 kata narasi < batas minimal 25 kata)
+• https://www.bekasikab.go.id/pemkab-bekasi-pers-berperan-penting-dalam-sosialisasikan-program-sekolah-rakyat: ERROR: Page.goto: net::ERR_CONNECTION_RESET at https://www.bekasikab.go.id/pemkab-bekasi-pers-berperan-penting-dalam-sosialisasikan-program-sekolah-rakyat
+Call log:
+  - navigating to "https://www.bekasikab.go.id/pemkab-bekasi-pers-berperan-penting-dalam-sosialisasikan-program-sekolah-rakyat", waiting until "domcontentloaded"
+
+• https://portal.medan.go.id/galeri-foto/wali-kota-medan-hadiri-open-house-sekolah-rakyat-sambut-kembalinya-hak-belajar-anak__read4601.html: FILTERED: Teks narasi terlalu pendek (8 kata narasi < batas minimal 25 kata)
+• https://www.mpr.go.id/album/eyJpdiI6IlBCblAzUW1iaEdLZzcvekRYVUlxd2c9PSIsInZhbHVlIjoiODlpbjh5U1dJYlBMTFlZOEpOSEVzZz09IiwibWFjIjoiNTM4YjlkZDJiYzg2MWUzNzczZjY0ZTVkM2U5NjhhMzliMGJhMTY3MGM0NWFiMTdiZTQ2M2RjODEzYzg3YTNjYyIsInRhZyI6IiJ9/Hidayat-Nur-Wahid-Terima-Sekolah-Rakyat-Terintegrasi-4-Jakarta: FILTERED: Teks terlalu pendek (15 kata < batas minimal 25 kata)
+• https://protokol.sinjaikab.go.id/2026/10/sekda-sinjai-hadiri-open-house-sekolah.html: FILTERED: Deteksi dump menu navigasi/daftar link (9/14 baris poin)
+• https://setkab.go.id/kepuasan-publik-dari-hasil-survei-terbaru-ppi-terhadap-kinerja-pemerintah-dan-presiden-prabowo-berada-di-atas-65-persen/: FILTERED: Konten teks kosong
+• https://www.lampumerahnews.id/2026/10/mensos-apresiasi-karya-siswa-daur-ulang.html: FILTERED: Konten teks kosong
