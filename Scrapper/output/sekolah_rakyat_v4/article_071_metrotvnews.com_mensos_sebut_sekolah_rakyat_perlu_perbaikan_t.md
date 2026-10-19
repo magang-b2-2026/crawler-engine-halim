@@ -1,7 +1,5 @@
 # Mensos Sebut Sekolah Rakyat Perlu Perbaikan Tata Kelola dan Pengawasan
 
-12 October 2026 15:29
-
 Menteri Sosial (Mensos) Saifullah Yusuf (Gus Ipul) menyebut masih terdapat siswa jenjang sekolah menengah atas (SMA) di Sekolah Rakyat yang belum bisa membaca. Hal tersebut diuangkapkan Gus Ipul usai meninjau Sekolah Rakyat Terintegrasi (SRT) 4 DKI Jakarta.
 
 Gus Ipul mengungkapkan jika proses belajar mengajar di Sekolah Rakyat secara umum sudah berjalan baik, namun sekolah masih membutuhkan penguatan pengawasan, tambahan tenaga pendidik, dan pendamping siswa agar proses belajar mengajar di Sekolah Rakyat lebih maksimal.

@@ -1,7 +1,5 @@
 # Pemkot Palembang siapkan 6,9 ha lahan pembangunan Sekolah Rakyat
 
-Penandatanganan pernyataan bersama Pemkot Palembang dan TNI Angkatan Udara terkait penggunaan sementara aset lahan TNI AU seluas 6,9 hektare milik Lanud Sri Mulyono Herlambang (SMH) untuk pembangunan Sekolah Rakyat di Kota Palembang, Rabu (14/12/2026). ANTARA/Edo Purmana
-
 "Pembangunan Sekolah Rakyat permanen yang megah ini direncanakan berdiri di atas lahan seluas 6,9 hektare milik TNI AU di kawasan Lanud SMH yang segera dibangun dalam waktu dekat ini," kata Wali Kota Palembang Ratu Dewa saat menandatangani pernyataan bersama TNI Angkatan Udara terkait penggunaan sementara aset lahan TNI AU seluas 6,9 hektare milik Lanud Sri Mulyono Herlambang (SMH) untuk pembangunan Sekolah Rakyat di Kota Palembang, Rabu.
 
 Dia mengatakan penandatanganan kesepakatan bersama ini menjadi tonggak sejarah kolaborasi antara sipil dengan militer di dunia pendidikan.

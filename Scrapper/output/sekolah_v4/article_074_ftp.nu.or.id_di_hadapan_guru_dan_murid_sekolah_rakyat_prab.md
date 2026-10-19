@@ -1,7 +1,5 @@
 # Di Hadapan Guru dan Murid Sekolah Rakyat, Prabowo: Kita Bertekad Mengubah Nasib Saudara-Saudara
 
-NU Online · Sabtu, 23 Agustus 2025 | 11:00 WIB
-
 Jakarta, **NU Online**
 
 Presiden Prabowo Subianto menjelaskan tujuan didirikannya Sekolah Rakyat. Hal itu disampaikannya kepada 2.296 guru Sekolah Rakyat saat pembekalan kepala sekolah dan guru Sekolah Rakyat di JIExpo Kemayoran, Jakarta, Jum'at (22/8/2025).

@@ -47,5 +47,3 @@ Model asrama (boarding) memiliki kerentanan tinggi terhadap isu perlindungan ana
 Pendidikan karakter memang penting, namun anak-anak dari keluarga rentan membutuhkan keterampilan praktis yang dapat memutus rantai kemiskinan. Tantangan masa depan Sekolah Rakyat adalah mengintegrasikan kurikulum vokasi atau teknologi digital agar lulusannya tidak hanya "berkarakter", tetapi juga kompetitif di pasar kerja modern yang semakin terotomasi.
 
 Perlu ada mekanisme kemitraan dengan sektor swasta (CSR) dan integrasi dengan sistem pendidikan nasional (Kemendikbudristek) agar Sekolah Rakyat memiliki legitimasi hukum dan finansial yang kuat, melampaui sekadar kebijakan diskresi kepala daerah atau menteri.
-
-Tim Schoolmedia

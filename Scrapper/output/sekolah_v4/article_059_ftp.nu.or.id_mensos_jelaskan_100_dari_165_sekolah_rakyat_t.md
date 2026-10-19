@@ -1,7 +1,5 @@
 # Mensos Jelaskan 100 dari 165 Sekolah Rakyat Telah Beroperasi
 
-NU Online · Sabtu, 23 Agustus 2025 | 08:00 WIB
-
 Jakarta, **NU Online**
 
 Menteri Sosial Saifullah Yusuf (Gus Ipul) melaporkan total Sekolah Rakyat yang akan beroperasi pada tahun ini mencapai 165 titik pada September mendatang. Sebanyak 100 titik di antaranya telah mulai jalan sejak Juli dan Agustus 2025.

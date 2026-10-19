@@ -18,4 +18,4 @@ KSP juga mengapresiasi kolaborasi lintas kementerian/lembaga dan proses verifika
 
 "Kita semua memahami bahwa pelaksanaan program Sekolah Rakyat bukanlah hal yang mudah, program ini bukan hanya membangun fisik gedung, melainkan juga membangun masa depan bangsa. KSP percaya, dengan konsolidasi yang kuat, eksekusi yang disiplin serta ketegasan di setiap lini, target 20 Juni 2026 bukanlah suatu hal yang mustahil," tegas Fadjar.
 
-Dalam rapat koordinasi tersebut, turut hadir Ketua Sekretariat Bersama Sekolah Rakyat Herman Koswara, jajaran Kementerian Sosial, serta perwakilan penyedia jasa pembangunan Sekolah Rakyat Tahap II. (May)
+Dalam rapat koordinasi tersebut, turut hadir Ketua Sekretariat Bersama Sekolah Rakyat Herman Koswara, jajaran Kementerian Sosial, serta perwakilan penyedia jasa pembangunan Sekolah Rakyat Tahap II.

@@ -1,7 +1,5 @@
 # P2G Nilai Wacana Pemerintah Bangun Sekolah Rakyat bagi Anak Miskin Belum Jadi Solusi
 
-NU Online · Senin, 13 Januari 2025 | 16:00 WIB
-
 Jakarta, **NUOnline**
 
 Kepala Bidang Advokasi Guru Perhimpunan Pendidikan dan Guru (P2G) Iman Zanatul Haeri menilai wacana pemerintah membangun Sekolah Rakyat, sebagai upaya memberikan pendidikan gratis bagi pelajar dari kelompok kurang mampu dan miskin ekstrem, adalah langkah yang belum bisa dijadikan solusi efektif.

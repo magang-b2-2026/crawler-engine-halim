@@ -1,8 +1,6 @@
 # Baru Setahun, Siswa Sekolah Rakyat Kotim Sudah Fasih Tiga Bahasa
 
-DPRD Kotawaringin Timur
-
-SB, SAMPIT - Perkembangan siswa Sekolah Rakyat Terintegrasi 1 Kotawaringin Timur (Kotim) membuat Wakil Ketua DPRD Kotim, Juliansyah, terharu. Baru satu tahun mengikuti pendidikan, anak-anak yang sebelumnya putus sekolah itu sudah mampu menyampaikan materi dalam bahasa Indonesia, Inggris, hingga Arab.
+Perkembangan siswa Sekolah Rakyat Terintegrasi 1 Kotawaringin Timur (Kotim) membuat Wakil Ketua DPRD Kotim, Juliansyah, terharu. Baru satu tahun mengikuti pendidikan, anak-anak yang sebelumnya putus sekolah itu sudah mampu menyampaikan materi dalam bahasa Indonesia, Inggris, hingga Arab.
 
 Kemampuan tersebut disaksikan langsung Juliansyah saat menghadiri open house peringatan satu tahun Sekolah Rakyat Kotim, Sabtu (17/10/2026).
 

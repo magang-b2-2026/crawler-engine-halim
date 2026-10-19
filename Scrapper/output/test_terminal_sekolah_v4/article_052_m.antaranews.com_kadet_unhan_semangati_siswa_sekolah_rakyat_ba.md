@@ -1,7 +1,5 @@
 # Kadet Unhan semangati siswa Sekolah Rakyat Banyumas meraih cita-cita
 
-Kadet Universitas Pertahanan (Unhan) menggelar kegiatan bersama siswa Sekolah Rakyat Terintegrasi (SRT) 1 Kabupaten Banyumas di Aula SRT 1 Kabupaten Banyumas, Jawa Tengah, Kamis (15/10/2026). ANTARA/Sumarwoto
-
 Kepala SRT 1 Kabupaten Banyumas Siti Isbandiyah di Banyumas, Kamis, mengatakan kehadiran para kadet membawa suasana baru yang disambut antusias siswa karena menanamkan kebiasaan positif dalam kehidupan sehari-hari.
 
 "Kehadiran kadet dari Unhan ini sangat diterima dengan baik oleh kami khususnya dan anak-anak pada umumnya, karena mereka hadir membawa kebahagiaan tersendiri," katanya.

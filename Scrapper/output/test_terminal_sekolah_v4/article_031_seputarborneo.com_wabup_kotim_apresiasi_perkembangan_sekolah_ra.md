@@ -1,8 +1,6 @@
 # Wabup Kotim Apresiasi Perkembangan Sekolah Rakyat, Siapkan Layanan Kesehatan bagi Siswa
 
-Pemkab Kotawaringin Timur
-
-SB, SAMPIT - Wakil Bupati Kotawaringin Timur (Kotim), Irawati, mengapresiasi perkembangan siswa Sekolah Rakyat Terintegrasi 1 Kotim yang dinilai menunjukkan perubahan positif, terutama dari sisi karakter, kedisiplinan, serta keberanian dalam menampilkan potensi diri.
+Wakil Bupati Kotawaringin Timur (Kotim), Irawati, mengapresiasi perkembangan siswa Sekolah Rakyat Terintegrasi 1 Kotim yang dinilai menunjukkan perubahan positif, terutama dari sisi karakter, kedisiplinan, serta keberanian dalam menampilkan potensi diri.
 
 Apresiasi tersebut disampaikan Irawati saat menghadiri kegiatan Open House Satu Tahun Sekolah Rakyat Terintegrasi 1 Kabupaten Kotawaringin Timur yang mengusung tema "Dulu Kami Bermimpi, Kini Kami Berani" Sabtu (17/10/2026).
 

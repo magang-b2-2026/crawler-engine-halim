@@ -1,8 +1,6 @@
 # Sekolah Rakyat 4 Padang Tampilkan Pertunjukan Seni dan Jelaskan Mekanisme Seleksi Siswa
 
-Siswa Sekolah Rakyat Menengah Atas (SRMA) 4 Padang berfoto bersama kepala sekolah, Gubernur Sumatera Barat yang diwakili Asisten Pemerintahan dan Kesejahteraan Rakyat, serta tamu undangan di Aula SRMA 4 Padang, Sabtu (17/10). f/Widya
-
-**Ganto.co -** Sekolah Rakyat Menengah Atas (SRMA) 4 Padang, salah satu program Presiden Republik Indonesia, mengadakan *Open House* di Aula Asrama SRMA 4 Padang, Sabtu (17/10).
+Sekolah Rakyat Menengah Atas (SRMA) 4 Padang, salah satu program Presiden Republik Indonesia, mengadakan *Open House* di Aula Asrama SRMA 4 Padang, Sabtu (17/10).
 
 Kegiatan *Open House* menampilkan pertunjukan seni dan kreativitas siswa, pembacaan puisi, sambutan Gubernur Sumatera Barat yang diwakili oleh Asisten Pemerintahan dan Kesejahteraan Rakyat, serta dialog interaktif bersama siswa dan tenaga kependidikan.
 

@@ -1,8 +1,6 @@
 # Sekolah Rakyat, Siswa Diasramakan dan Dibiayai Pusat
 
-- 18 Okt 2026 11:32 WIB
-
-RRI.CO.ID, Sanggau- Pemerintah pusat memfokuskan program pendidikan gratis melalui Sekolah Rakyat yang diharapkan dapat hadir di setiap kabupaten, termasuk Kabupaten Sanggau, Kalimantan Barat. Program ini dirancang untuk memberikan akses pendidikan bagi siswa mulai dari jenjang sekolah dasar (SD), sekolah menengah pertama (SMP), hingga sekolah menengah atas (SMA), dengan sistem pendidikan berbasis asrama dan seluruh kebutuhan hidup siswa ditanggung pemerintah pusat.
+Pemerintah pusat memfokuskan program pendidikan gratis melalui Sekolah Rakyat yang diharapkan dapat hadir di setiap kabupaten, termasuk Kabupaten Sanggau, Kalimantan Barat. Program ini dirancang untuk memberikan akses pendidikan bagi siswa mulai dari jenjang sekolah dasar (SD), sekolah menengah pertama (SMP), hingga sekolah menengah atas (SMA), dengan sistem pendidikan berbasis asrama dan seluruh kebutuhan hidup siswa ditanggung pemerintah pusat.
 
 Wakil Ketua Komisi IV DPRD Kabupaten Sanggau, Alfonsius Masgio, mengatakan keberadaan Sekolah Rakyat di setiap kabupaten diharapkan dapat memperluas kesempatan masyarakat untuk memperoleh pendidikan yang layak. Menurutnya, program tersebut menjadi salah satu upaya pemerintah dalam memastikan anak-anak dapat mengenyam pendidikan tanpa terbebani biaya kebutuhan hidup selama menempuh pendidikan.
 

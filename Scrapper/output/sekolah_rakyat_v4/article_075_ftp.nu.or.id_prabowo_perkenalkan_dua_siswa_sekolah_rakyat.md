@@ -1,7 +1,5 @@
 # Prabowo Perkenalkan Dua Siswa Sekolah Rakyat, Sempat Putus Sekolah Kini Berprestasi
 
-NU Online · Jumat, 14 Agustus 2026 | 13:00 WIB
-
 Jakarta, **NU Online**
 
 Presiden Prabowo Subianto mengundang dua siswa Sekolah Rakyat dalam Sidang Tahunan MPR dan Sidang Bersama DPR dan DPD RI di Gedung Nusantara, Kompleks Parlemen, Senayan, Jakarta, Jumat (14/8/2026).

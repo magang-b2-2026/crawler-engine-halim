@@ -1,7 +1,5 @@
 # Ombudsman minta ruang ibadah Sekolah Rakyat ditata ulang
 
-Anggota Ombudsman RI Prof. Radian Syam (kedua kiri) didampingi Bupati Trenggalek Mochamad Nur Arifin (kanan) dan Kepala Sekolah rakyat Trepadu (SRT) 01 Trenggalek Yogyantoro (kedua kanan) meninjau sejumlah fasilitas bangunan Sekolah Rakyat Terpadu (SRT) 01 Trenggalek di Trenggalek, Jawa Timur, Rabu (14/10/2026). Kunjungan tersebut dilakukan untuk memastikan pembangunan dan penyelenggaraan Sekolah Rakyat sebagai program prioritas nasional berjalan sesuai kebijakan pemerintah serta mengantisipasi potensi keluhan masyarakat terkait pelaksanaannya. ANTARA FOTO/Destyan Sujarwoko
-
 Anggota Ombudsman RI Radian Syam mengatakan, temuan tersebut diperoleh saat melakukan pemantauan fasilitas Sekolah Rakyat bersama Bupati Trenggalek Mochamad Nur Arifin dan jajaran pemerintah daerah, Rabu.
 
 Saat meninjau ruangan yang diperuntukkan sebagai tempat ibadah siswa non-muslim, Radian mendapati fasilitas tersebut belum digunakan sesuai peruntukannya dan masih terdapat gamelan di dalamnya.

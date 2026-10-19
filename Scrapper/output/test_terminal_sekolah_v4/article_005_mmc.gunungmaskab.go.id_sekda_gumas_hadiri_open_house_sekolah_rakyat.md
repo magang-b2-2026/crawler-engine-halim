@@ -1,6 +1,6 @@
 # Sekda Gumas Hadiri Open House Sekolah Rakyat, Tinjau Fasilitas dan Perkembangan Siswa
 
-Kuala Kurun - Sekretaris Daerah (Sekda) Kabupaten Gunung Mas, **Richard**, mewakili Bupati Gunung Mas **Jaya Samaya Monong** menghadiri kegiatan *Open House* Serentak Sekolah Rakyat se-Indonesia di Sekolah Rakyat Terintegrasi 1 Kabupaten Gunung Mas, Desa Tumbang Tambirah, Kecamatan Kurun, Sabtu (17/10/2026).
+Sekretaris Daerah (Sekda) Kabupaten Gunung Mas, **Richard**, mewakili Bupati Gunung Mas **Jaya Samaya Monong** menghadiri kegiatan *Open House* Serentak Sekolah Rakyat se-Indonesia di Sekolah Rakyat Terintegrasi 1 Kabupaten Gunung Mas, Desa Tumbang Tambirah, Kecamatan Kurun, Sabtu (17/10/2026).
 
 Kegiatan tersebut menjadi momentum untuk memperkenalkan program Sekolah Rakyat, fasilitas pendidikan, serta perkembangan siswa kepada pemerintah daerah, orang tua, dan masyarakat.
 

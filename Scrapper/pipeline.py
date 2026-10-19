@@ -276,7 +276,7 @@ def clean_html_embedded_noise(html_content: str) -> str:
                     prev.decompose()
             el.decompose()
 
-        # 4. Pembersihan header, footer, navigasi, sidebar, dan widget rekomendasi/komentar
+        # 4. Pembersihan header, footer, navigasi, sidebar, metadata tanggal/penulis, caption, dan widget
         structural_noise = [
             "body > header", "header#header", "header.site-header", "header.main-header", "div.main-header",
             "ul.main-header__top-details-list", "div.top-bar", "div.information__content",
@@ -286,7 +286,18 @@ def clean_html_embedded_noise(html_content: str) -> str:
             "div.popular-posts", "div.trending-news", "div.comments-area", "div.comment-respond", "#comments",
             "div.discussion-section", "section.comments", "div.social-share", "div.share-box", "div.post-share",
             "div.social-links", "ul.social-media", "div.contact-info", "div.info-pemprov", "div.footer-contact",
-            "div.share-links", "div.kontak-kami"
+            "div.share-links", "div.kontak-kami",
+            # Metadata publikasi, author info, dan tanggal
+            "ul.authar-info", "div.authar-info", "div.author-info", "ul.author-info", "div.post-meta",
+            "div.article-meta", "div.entry-meta", "div.meta-info", "div.post-info", "div.published-date",
+            "li.date", "p.date", "span.date", "time", "span.time", "p.published", "div.published",
+            # Caption gambar & kredit foto dalam DOM
+            "figcaption", ".figcaption", ".caption", ".image-caption", ".img-caption", ".photo-caption",
+            ".foto-caption", "p.caption", "span.caption", ".wp-caption", ".wp-caption-text",
+            # Category badges, kickers, audio tools, dan tag bar
+            "a.sb-artikel__cap", "span.sb-artikel__cap", ".sb-kicker", "div.sb-artikel__baris",
+            "div.sb-dengar", "figure.sb-artikel__gambar", "div.tag-container", ".tags-container",
+            ".post-tags", ".article-tags", "div.news-tool", "div.share"
         ]
         for el in soup.select(", ".join(structural_noise)):
             el.decompose()
@@ -432,8 +443,27 @@ def sanitize_cpt_text(text: str, title: str = "") -> str:
         if (line_str.upper() in RUBRIC_KEYWORDS) or (re.match(r"^[A-Z\s]{3,20}$", line_str) and len(line_str.split()) <= 2):
             continue
 
-        # E. Eliminasi timestamp/tanggal mentah (misal: "Oct 17, 2026 -", "14 Okt 2026 10:18 WIB")
-        if re.match(r"^(?:(?:senin|selasa|rabu|kamis|jumat|sabtu|minggu|monday|tuesday|wednesday|thursday|friday|saturday|sunday)[,\s]+)?(?:(?:jan|feb|mar|apr|mei|may|jun|jul|agu|aug|sep|okt|oct|nov|des|dec)[a-z]*|\d{1,2})\s+\d{1,2}[,\s\-]+(?:\d{4})?(?:\s+[-–—|•]\s*)?(?:\s*\d{1,2}:\d{2}(?::\d{2})?(?:\s*(?:wib|wita|wit|gmt|utc))?)?\s*[-–—]?$", line_str, re.I):
+        # D1. Eliminasi kicker/kategori instansi terisolasi di awal artikel (misal: "Pemkab Kotawaringin Timur", "DPRD Kotawaringin Timur")
+        if len(clean_lines) <= 2 and len(line_str.split()) <= 4 and len(line_str) < 35 and re.match(r"^(?:Pemkab|Pemkot|Pemprov|DPRD|DPR)\s+[A-Za-z0-9\s]+$", line_str, re.I) and not line_str.endswith((".", "!", "?")):
+            continue
+
+        # E. Eliminasi timestamp/tanggal mentah & baris tanggal publikasi media (misal: "- 18 Okt 2026 11:32 WIB", "12 October 2026 15:29", "NU Online · Senin, 13 Januari 2025 | 16:00 WIB")
+        if re.match(
+            r"^(?:[-*•–—|#\s]*\s*)?"
+            r"(?:[A-Za-z0-9\.\s]{1,30}?(?:[-–—|•·~]+|[^\w\s]|\s{2,}))?\s*"
+            r"(?:(?:senin|selasa|rabu|kamis|jumat|jum'?at|sabtu|minggu|monday|tuesday|wednesday|thursday|friday|saturday|sunday)[,\s]+)?"
+            r"(?:"
+                r"\d{1,2}\s+[-/]?\s*(?:jan(?:uari)?|feb(?:ruari)?|mar(?:et)?|apr(?:il)?|mei|may|jun(?:i)?|jul(?:i)?|agu(?:stus)?|aug(?:ust)?|sep(?:tember)?|okt(?:ober)?|oct(?:ober)?|nov(?:ember)?|des(?:ember)?|dec(?:ember)?)\s+[-/]?\s*\d{2,4}"
+                r"|(?:jan(?:uari)?|feb(?:ruari)?|mar(?:et)?|apr(?:il)?|mei|may|jun(?:i)?|jul(?:i)?|agu(?:stus)?|aug(?:ust)?|sep(?:tember)?|okt(?:ober)?|oct(?:ober)?|nov(?:ember)?|des(?:ember)?|dec(?:ember)?)\s+\d{1,2}[,\s\-]+\d{2,4}"
+                r"|\d{1,2}[-/\.]\d{1,2}[-/\.]\d{2,4}"
+            r")"
+            r"(?:[,\s|•·~]+(?:pukul\s+)?\d{1,2}[:\.]\d{2}(?:[:\.]\d{2})?(?:\s*(?:wib|wita|wit|gmt|utc|[ap]\.?m\.?))?)?"
+            r"(?:\s*[-–—|•·~]\s*)?"
+            r"(?:\s*(?:wib|wita|wit|gmt|utc))?"
+            r"\s*$",
+            line_str,
+            re.I,
+        ):
             continue
 
         # F. Eliminasi baris dateline terisolasi (misal: "**Jakarta**-", "JAKARTA -")
@@ -446,10 +476,12 @@ def sanitize_cpt_text(text: str, title: str = "") -> str:
         if re.match(r"^(?:\*\*|__)?\s*(?:dapatkan\s+update\s+berita|ikuti\s+saluran\s+whatsapp|simak\s+berita\s+terbaru\s+di|(?:install|unduh|download)\s+aplikasi|klik\s+di\s+sini\s+untuk\s+berlangganan|bergabunglah\s+dengan\s+saluran|bagikan\s+pemikiran|kirim\s+komentar)", line_str, re.I):
             continue
 
-        # H. Eliminasi caption gambar & kredit foto
-        if re.search(r"(?:foto|photo|dok(?:umen)?|ilustrasi|sumber\s+foto|fotografer)\s*:\s*[A-Za-z0-9/\.\s\-\*\_]+$", line_str, re.I) and len(line_str) < 300:
+        # H. Eliminasi caption gambar & kredit foto (termasuk kredit kantor berita seperti ANTARA/Nama, ANTARA FOTO/Nama, f/Nama)
+        if re.search(r"(?:foto|photo|dok(?:umen)?|ilustrasi|sumber\s+foto|fotografer)\s*:\s*[A-Za-z0-9/\.\s\-\*\_]+$", line_str, re.I):
             continue
         if re.match(r"^\(?(?:foto|photo|dok(?:umen)?|ilustrasi|fotografer)\s*[:/]\s*[^\n\)]+\)?$", line_str, re.I):
+            continue
+        if re.search(r"(?:ANTARA(?:\s+FOTO)?\s*/\s*[A-Za-z0-9\.\s\-_]+|(?:\.|\b)f/[A-Za-z0-9\.\s\-_]+)\s*$", line_str, re.I):
             continue
 
         # I. Eliminasi copyright, disclaimer anti-crawler, arsip paywall, sindikasi, dan CTA donasi
@@ -518,6 +550,11 @@ def sanitize_cpt_text(text: str, title: str = "") -> str:
             continue
         # Inisial/kredit institusi media di baris terakhir (misal: Diskominfo/D, Kominfo/Fikri, Setda/A, Humas/B)
         if re.search(r"^(?:\*\*|__|\*|_)?\s*(?:Diskominfo|Kominfo|Humas|Prokopim|Setda|Media\s+Center)\s*(?:[/\\-]\s*[A-Za-z0-9\s]+|\([A-Za-z0-9\s]+\))\s*(?:\*\*|__|\*|_)?$", last_line, re.I):
+            temp_lines.pop()
+            changed = True
+            continue
+        # Signature tim media / redaksi di baris terakhir (misal: "Tim Schoolmedia", "Tim Redaksi", "Tim Antara", "Schoolmedia News")
+        if re.search(r"^(?:\*\*|__|\*|_)?\s*(?:Tim\s+[A-Za-z0-9\s\.\-_]{2,30}|[A-Za-z0-9\s\.\-_]{2,30}\s+News)\s*(?:\*\*|__|\*|_)?$", last_line, re.I) and len(last_line.split()) <= 4:
             temp_lines.pop()
             changed = True
             continue

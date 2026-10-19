@@ -746,6 +746,51 @@ class TestHeadlineAndEmbedNoiseCleaning(unittest.TestCase):
         self.assertNotIn("Zabur Karuru", c18)
         self.assertIn("Seluruh kegiatan belajar mengajar", c18)
 
+    def test_raw_timestamps_and_portal_dates_purged(self):
+        """Memastikan baris tanggal publikasi media (- 18 Okt 2026 11:32 WIB, 12 October 2026, NU Online) dibersihkan."""
+        raw_rri = (
+            "# Sekolah Rakyat, Siswa Diasramakan dan Dibiayai Pusat\n\n"
+            "- 18 Okt 2026 11:32 WIB\n\n"
+            "Pemerintah pusat memfokuskan program pendidikan gratis melalui Sekolah Rakyat."
+        )
+        clean_rri = sanitize_cpt_text(raw_rri)
+        self.assertNotIn("18 Okt 2026 11:32 WIB", clean_rri)
+        self.assertIn("Pemerintah pusat memfokuskan program", clean_rri)
+
+        raw_metro = (
+            "# Mensos Sebut Sekolah Rakyat Perlu Perbaikan Tata Kelola\n\n"
+            "12 October 2026 15:29\n\n"
+            "Menteri Sosial Saifullah Yusuf menyebut masih terdapat siswa belum bisa membaca."
+        )
+        clean_metro = sanitize_cpt_text(raw_metro)
+        self.assertNotIn("12 October 2026 15:29", clean_metro)
+        self.assertIn("Menteri Sosial Saifullah Yusuf", clean_metro)
+
+        raw_nu = (
+            "# P2G Nilai Wacana Sekolah Rakyat Belum Jadi Solusi\n\n"
+            "NU Online · Senin, 13 Januari 2025 | 16:00 WIB\n\n"
+            "Kepala Bidang Advokasi Guru menilai wacana pemerintah membangun sekolah rakyat."
+        )
+        clean_nu = sanitize_cpt_text(raw_nu)
+        self.assertNotIn("13 Januari 2025", clean_nu)
+        self.assertNotIn("NU Online", clean_nu)
+        self.assertIn("Kepala Bidang Advokasi Guru", clean_nu)
+
+    def test_photo_credit_captions_kickers_and_team_signature_purged(self):
+        """Memastikan caption foto (ANTARA/Nama, f/Nama), kicker Pemkab, dan signature Tim Media dibersihkan."""
+        raw = (
+            "# Pemkot Palembang Siapkan Lahan Sekolah Rakyat\n\n"
+            "Pemkab Kotawaringin Timur\n\n"
+            "Penandatanganan nota kesepahaman lahan bersama TNI AU. ANTARA/Edo Purmana\n\n"
+            "Wali Kota Palembang menyatakan kesiapan pembangunan fasilitas pendidikan.\n\n"
+            "Tim Schoolmedia"
+        )
+        clean = sanitize_cpt_text(raw)
+        self.assertNotIn("Pemkab Kotawaringin Timur", clean)
+        self.assertNotIn("ANTARA/Edo Purmana", clean)
+        self.assertNotIn("Tim Schoolmedia", clean)
+        self.assertIn("Wali Kota Palembang menyatakan kesiapan pembangunan", clean)
+
 
 class TestBotSolverDelegator(unittest.TestCase):
     def test_solve_captcha_via_bot_offline_graceful_fallback(self):

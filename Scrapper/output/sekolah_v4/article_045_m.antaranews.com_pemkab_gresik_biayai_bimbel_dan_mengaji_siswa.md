@@ -1,7 +1,5 @@
 # Pemkab Gresik biayai bimbel dan mengaji siswa Sekolah Rakyat
 
-Siswa mengikuti kegiatan pembelajaran di Sekolah Rakyat Kabupaten Gresik, Jawa Timur. ANTARA/HO-Kominfo Gresik
-
 Pemerintah Kabupaten Gresik, Jawa Timur membiayai bimbingan belajar (bimbel) dan pendampingan mengaji bagi siswa Sekolah Rakyat untuk memperkuat kemampuan akademik serta pendidikan keagamaan.
 
 Kepala Dinas Sosial Kabupaten Gresik Ummi Khoiroh mengatakan bimbingan belajar melalui program Smart School bersama Ruangguru saat ini diikuti 75 siswa kelas XI untuk mempersiapkan diri menghadapi Tes Kemampuan Akademik (TKA) dan melanjutkan pendidikan ke perguruan tinggi.
