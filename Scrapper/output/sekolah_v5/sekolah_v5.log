@@ -1,0 +1,52 @@
+=== PIPELINE AUDIT REPORT & QUALITY LOG ===
+Waktu Eksekusi       : 2026-10-19 11:28:41
+Topik Pencarian      : Sekolah Rakyat
+Total URL Diproses   : 100
+Total Lolos CPT Bersih: 78 artikel (32,727 kata)
+  - Jalur Tier 1 (Fast-Path) : 77 artikel
+  - Jalur Tier 2 (Playwright): 1 artikel
+  - Jalur Tier 3 (komdigi-bot): 0 artikel
+Total Duplikat Dieliminasi : 9 artikel
+Total Ditolak Quality Gate : 13 artikel
+Total Durasi Eksekusi: 75.08 detik
+
+--- DAFTAR ARTIKEL DUPLIKAT (DIELIMINASI) ---
+• [ANTARA News Banten] https://banten.antaranews.com/berita/393145/bagus-khoirunnas-dapat-penghargaan-di-anugerah-jurnalistik-sekolah-rakyat-2026/?&m=false -> [ANTARA News] (100.0%)
+• [ANTARA News] https://m.antaranews.com/amp/berita/5793945/sekolah-rakyat-terintegrasi-76-mimika-saat-ini-membina-58-siswa -> [ANTARA News] (100.0%)
+• [klikbogor.id] https://klikbogor.id/kunjungi-sekolah-rakyat-terintegrasi-6-kota-bogor-dedie-rachim-pesan-siswa-jaga-fasilitas/ -> [Pemerintah Kota Bogor] (95.0%)
+• [ANTARA News] https://bengkulu.antaranews.com/amp/berita/482693/lkbn-antara-raih-4-penghargaan-di-anugerah-jurnalistik-sekolah-rakyat-2026 -> [ANTARA News] (100.0%)
+• [Radar Sulbar] https://radarsulbar.fajar.co.id/2026/10/16/sekolah-rakyat-untuk-putus-rantai-kemiskinan/ -> [ANTARA News Bangka Belitung] (100.0%)
+• [ANTARA News Bangka Belitung] https://babel.antaranews.com/amp/berita/588085/sekolah-rakyat-untuk-putus-rantai-kemiskinan -> [ANTARA News Bangka Belitung] (100.0%)
+• [Kumparan.com] https://kumparan.com/kumparannews/menko-muhaimin-sebut-sekolah-rakyat-jadi-model-pendidikan-and-politik-pemberdayaan-28P7AT5BEgr -> [detikNews] (82.2%)
+• [Koran Jakarta ®] https://koran-jakarta.com/2026-10-18/tampung-350-siswa-sekolah-rakyat-bekasi-perkuat-misi-memutus-rantai-kemiskinan/amp -> [ANTARA News Megapolitan] (82.2%)
+• [Kompas.com] https://makassar.kompas.com/read/2026/10/16/171729078/dua-tahun-prabowo-gibran-siswa-sekolah-rakyat-sulteng-menanti-gedung?source=wp_topikpilihan -> [Kompas.com] (100.0%)
+
+--- DAFTAR ARTIKEL DITOLAK / GAGAL ---
+• https://bantenprov.go.id/index.php/video/sekolah-rakyat-pandeglang-siapkan-akses-pendidikan-bagi-anak-kurang-mampu-banten-sepekan: ERROR: Page.goto: Timeout 15000ms exceeded.
+Call log:
+  - navigating to "https://bantenprov.go.id/index.php/video/sekolah-rakyat-pandeglang-siapkan-akses-pendidikan-bagi-anak-kurang-mampu-banten-sepekan", waiting until "domcontentloaded"
+
+• https://cirebonkab.go.id/open-house-sekolah-rakyat-wabup-jigus-akses-pendidikan-yang-lebih-luas-bagi-masyarakat/: FILTERED: Teks terlalu pendek (6 kata < batas minimal 25 kata)
+• https://kemenag.go.id/nasional/calon-guru-agama-pada-sekolah-rakyat-akan-dites-kemampuan-baca-kitab-suci-svIz7: FILTERED: Konten teks kosong
+• https://portal.medan.go.id/index.php/galeri-foto/wali-kota-medan-hadiri-open-house-sekolah-rakyat-sambut-kembalinya-hak-belajar-anak__read4601.html: FILTERED: Teks narasi terlalu pendek (0 kata narasi < batas minimal 25 kata)
+• https://portal.medan.go.id/galeri-foto/wali-kota-medan-hadiri-open-house-sekolah-rakyat-sambut-kembalinya-hak-belajar-anak__read4601.html: FILTERED: Teks narasi terlalu pendek (0 kata narasi < batas minimal 25 kata)
+• https://www.mpr.go.id/album/eyJpdiI6IlBCblAzUW1iaEdLZzcvekRYVUlxd2c9PSIsInZhbHVlIjoiODlpbjh5U1dJYlBMTFlZOEpOSEVzZz09IiwibWFjIjoiNTM4YjlkZDJiYzg2MWUzNzczZjY0ZTVkM2U5NjhhMzliMGJhMTY3MGM0NWFiMTdiZTQ2M2RjODEzYzg3YTNjYyIsInRhZyI6IiJ9/Hidayat-Nur-Wahid-Terima-Sekolah-Rakyat-Terintegrasi-4-Jakarta: FILTERED: Teks terlalu pendek (15 kata < batas minimal 25 kata)
+• https://www.kompas.id/artikel/sekolah-rakyat-di-bekasi-harapan-untuk-keluarga-kurang-mampu?open_from=Section_Terbaru: FILTERED: Teks terlalu pendek (22 kata < batas minimal 25 kata)
+• https://protokol.sinjaikab.go.id/2026/10/sekda-sinjai-hadiri-open-house-sekolah.html: FILTERED: Deteksi dump menu navigasi/daftar link (9/14 baris poin)
+• https://bantenprov.go.id/video/sekolah-rakyat-harapan-anak-banten-untuk-tetap-sekolah-teaser-banten-sepekan: ERROR: Page.goto: Timeout 15000ms exceeded.
+Call log:
+  - navigating to "https://bantenprov.go.id/video/sekolah-rakyat-harapan-anak-banten-untuk-tetap-sekolah-teaser-banten-sepekan", waiting until "domcontentloaded"
+
+• https://bantenprov.go.id/index.php/video/tinjau-sekolah-rakyat-pandeglang-gubernur-andra-soni-pastikan-pembangunan-sesuai-target: ERROR: Page.goto: Timeout 15000ms exceeded.
+Call log:
+  - navigating to "https://bantenprov.go.id/index.php/video/tinjau-sekolah-rakyat-pandeglang-gubernur-andra-soni-pastikan-pembangunan-sesuai-target", waiting until "domcontentloaded"
+
+• https://bantenprov.go.id/video/tinjau-sekolah-rakyat-pandeglang-gubernur-andra-soni-pastikan-pembangunan-sesuai-target: ERROR: Page.goto: Timeout 15000ms exceeded.
+Call log:
+  - navigating to "https://bantenprov.go.id/video/tinjau-sekolah-rakyat-pandeglang-gubernur-andra-soni-pastikan-pembangunan-sesuai-target", waiting until "domcontentloaded"
+
+• https://bantenprov.go.id/video/sekolah-rakyat-pandeglang-siapkan-akses-pendidikan-bagi-anak-kurang-mampu-teaser-banten-sepekan: ERROR: Page.goto: Timeout 15000ms exceeded.
+Call log:
+  - navigating to "https://bantenprov.go.id/video/sekolah-rakyat-pandeglang-siapkan-akses-pendidikan-bagi-anak-kurang-mampu-teaser-banten-sepekan", waiting until "domcontentloaded"
+
+• https://www.lampumerahnews.id/2026/10/mensos-apresiasi-karya-siswa-daur-ulang.html: FILTERED: Konten teks kosong
